@@ -171,7 +171,7 @@ jobs:
             ~/.m2/repository
             ~/.gradle
             !~/.gradle/caches/*/plugin-resolution/
-            !~/.m2/repository/org/openapitools/
+            #!~/.m2/repository/org/openapitools/
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-test-maven-plugin-${{ env.cache-name }}-
