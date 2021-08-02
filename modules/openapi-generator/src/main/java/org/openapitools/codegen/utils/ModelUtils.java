@@ -323,6 +323,7 @@ public class ModelUtils {
      */
     private static void visitSchema(OpenAPI openAPI, Schema schema, String mimeType, List<String> visitedSchemas, OpenAPISchemaVisitor visitor) {
         visitor.visit(schema, mimeType);
+        LOGGER.info(">> FIXME << visitSchema, Type[{}],Name[{}],Ref[{}],Required[{}]", schema.getType(), schema.getName(), schema.get$ref(), schema.getRequired());
         if (schema.get$ref() != null) {
             String ref = getSimpleRef(schema.get$ref());
             if (!visitedSchemas.contains(ref)) {

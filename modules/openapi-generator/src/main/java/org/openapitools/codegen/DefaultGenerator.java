@@ -30,6 +30,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.security.*;
 import io.swagger.v3.oas.models.tags.Tag;
+import io.swagger.v3.oas.models.media.ComposedSchema;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.comparator.PathFileComparator;
 import org.apache.commons.lang3.ObjectUtils;
@@ -495,6 +496,42 @@ public class DefaultGenerator implements Generator {
                 models.put("classname", config.toModelName(name));
                 models.putAll(config.additionalProperties());
                 allProcessedModels.put(name, models);
+                
+                // >> FIXME <<
+                LOGGER.error(">> FIXME << schema.getProperties()=[{}]", schema.getProperties());
+                if (schema.getProperties() == null) continue;
+                Map<String, Schema> properties = schema.getProperties();
+                for (String keyProperties : properties.keySet()) {
+                    String keyPropertiesString = keyProperties.toString();
+                    Schema schemaProperties = properties.get(keyProperties);
+                    if (!(schemaProperties instanceof ComposedSchema)) continue;
+                    ComposedSchema cs = (ComposedSchema)schemaProperties;
+                    Boolean has$ref = false;
+                    Boolean hasProperties = false;
+                    String nameOf$ref = "";
+                    if (cs.getAllOf() != null) {
+                        for (Schema s2 : cs.getAllOf()) {
+                            if (s2.get$ref() != null) {
+                                has$ref = true;
+                                Schema unaliasSchema = ModelUtils.unaliasSchema(openAPI, s2);
+                                String schemaName = ModelUtils.getSimpleRef(unaliasSchema.get$ref());
+                                nameOf$ref = config.toModelName(schemaName);
+                            }
+                            if (s2.getProperties() == null) continue;
+                            hasProperties = true;
+                        }
+                    }
+                    if (!has$ref.booleanValue() || !hasProperties.booleanValue()) continue;
+                    String newName = config.toModelName(nameOf$ref + name);
+                    HashMap<String, Schema> schemaPropertiesMap = new HashMap<String, Schema>();
+                    schemaPropertiesMap.put(newName, cs);
+                    Map<String, Object> modelsProperties = processModels(config, schemaPropertiesMap);
+                    modelsProperties.put("classname", config.toModelName(newName));
+                    modelsProperties.putAll(config.additionalProperties());
+                    allProcessedModels.put(newName, modelsProperties);
+                    LOGGER.error(">> allProcessedModels.put(Name({}),modelsProperties({})", newName, modelsProperties);
+                }
+                LOGGER.error("<< generateModels.Model(Name({})", name);
             } catch (Exception e) {
                 throw new RuntimeException("Could not process model '" + name + "'" + ".Please make sure that your schema is correct!", e);
             }
