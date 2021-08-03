@@ -594,11 +594,11 @@ public class GoClientCodegen extends AbstractGoCodegen {
     private String constructExampleCode(CodegenModel codegenModel, HashMap<String, CodegenModel> modelMaps, HashMap<String, Integer> processedModelMap) {
         // break infinite recursion. Return, in case a model is already processed in the current context.
         if (codegenModel == null) { // FIXME : workaround
-            LOGGER.info("codegenModel=[{}].return", codegenModel);
+            LOGGER.info(">> FIXME << codegenModel=[{}].return", codegenModel);
             return "NULL";
         }
         String model = codegenModel.name;
-        LOGGER.info("codegenModel.name=[{}]", model);
+        LOGGER.info(">> FIXME << codegenModel.name=[{}]", model);
         if (processedModelMap.containsKey(model)) {
             int count = processedModelMap.get(model);
             if (count == 1) {
@@ -618,7 +618,7 @@ public class GoClientCodegen extends AbstractGoCodegen {
             return goImportAlias + "." + model + "(" + example + ")";
         } else if (codegenModel.oneOf != null && !codegenModel.oneOf.isEmpty()) {
             String subModel = (String) codegenModel.oneOf.toArray()[0];
-            LOGGER.info("codegenModel.oneOf[{}].subModel=[{}]", codegenModel.oneOf, subModel);
+            LOGGER.info(">> FIXME << codegenModel.oneOf[{}].subModel=[{}]", codegenModel.oneOf, subModel);
             String oneOf = constructExampleCode(modelMaps.get(subModel), modelMaps, processedModelMap).substring(1);
             return goImportAlias + "." + model + "{" + subModel + ": " + oneOf + "}";
         } else {
