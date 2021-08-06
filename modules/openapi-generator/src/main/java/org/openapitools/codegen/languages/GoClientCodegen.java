@@ -442,13 +442,16 @@ public class GoClientCodegen extends AbstractGoCodegen {
         for (Object o : allModels) {
             HashMap<String, Object> h = (HashMap<String, Object>) o;
             CodegenModel m = (CodegenModel) h.get("model");
+            LOGGER.info(">> FIXME << GoClientCodegen.postProcessOperationsWithModels.01.modelMaps.put({})", m.classname);
             modelMaps.put(m.classname, m);
         }
 
         List<CodegenOperation> operationList = (List<CodegenOperation>) operations.get("operation");
         for (CodegenOperation op : operationList) {
+            LOGGER.info(">> FIXME << GoClientCodegen.postProcessOperationsWithModels.02.CodegenOperation.consumes[{}].operationId[{}].baseName[{}]", op.consumes, op.operationId, op.baseName);
             for (CodegenParameter p : op.allParams) {
                 p.vendorExtensions.put("x-go-example", constructExampleCode(p, modelMaps, processedModelMaps));
+                LOGGER.info(">> FIXME << GoClientCodegen.postProcessOperationsWithModels.02.CodegenParameter.baseName[{}]", p.baseName);
             }
             processedModelMaps.clear();
         }

@@ -498,7 +498,9 @@ public abstract class AbstractGoCodegen extends DefaultCodegen implements Codege
                 imports.add(createMapping("import", "os"));
                 addedOSImport = true;
             }
+            LOGGER.info(">> FIXME << AbstractGoCodegen.postProcessOperationsWithModels.01.CodegenOperation.consumes[{}].operationId[{}].baseName[{}]", operation.consumes, operation.operationId, operation.baseName);
             for (CodegenParameter param : operation.allParams) {
+                LOGGER.info(">> FIXME << AbstractGoCodegen.postProcessOperationsWithModels.02.CodegenParameter.baseName[{}]", param.baseName);
                 // import "os" if the operation uses files
                 if (!addedOSImport && "*os.File".equals(param.dataType)) {
                     imports.add(createMapping("import", "os"));
@@ -601,6 +603,7 @@ public abstract class AbstractGoCodegen extends DefaultCodegen implements Codege
         if (property.isContainer || property.isFreeFormObject || property.isAnyType) {
             property.vendorExtensions.put("x-golang-is-container", true);
         }
+        LOGGER.debug(">> FIXME << postProcessModelProperty.model[{}],isEnum[{}].dataType[{}].P[{}],", model.getName(), property.isEnum, property.dataType, property.isPrimitiveType);
     }
 
     @Override

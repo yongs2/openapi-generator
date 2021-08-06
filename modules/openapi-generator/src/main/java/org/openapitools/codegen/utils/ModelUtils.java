@@ -1040,12 +1040,20 @@ public class ModelUtils {
         if (content == null || content.isEmpty()) {
             return null;
         }
+        MediaType mediaType = null;
+        mediaType = (MediaType)content.values().iterator().next();
         Map.Entry<String, MediaType> entry = content.entrySet().iterator().next();
+        LOGGER.info(">> FIXME << getSchemaFromContent, content.size()[{}],containsKey[{}],mediaType[{}]", content.size(), content.containsKey("multipart/related"),mediaType);
         if (content.size() > 1) {
-            // Other content types are currently ignored by codegen. If you see this warning,
-            // reorder the OAS spec to put the desired content type first.
-            once(LOGGER).warn("Multiple schemas found in the OAS 'content' section, returning only the first one ({})",
-                    entry.getKey());
+            if (content.containsKey("multipart/related")) {
+                mediaType = (MediaType)content.get("multipart/related");
+                LOGGER.warn("Multiple schemas found in content, returning \"multipart/related\"");
+            } else {
+                // Other content types are currently ignored by codegen. If you see this warning,
+                // reorder the OAS spec to put the desired content type first.
+                once(LOGGER).warn("Multiple schemas found in the OAS 'content' section, returning only the first one ({})",
+                        entry.getKey());
+            }
         }
         return entry.getValue().getSchema();
     }

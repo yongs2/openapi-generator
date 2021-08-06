@@ -3796,6 +3796,7 @@ public class DefaultCodegen implements CodegenConfig {
                 schema = schemas.get(op.returnBaseType);
             }
             if (schema != null) {
+                LOGGER.debug(">> FIXME << handleMethodResponse.before.fromModel.name[{}]", op.returnBaseType);
                 CodegenModel cmod = fromModel(op.returnBaseType, schema);
                 op.discriminator = cmod.discriminator;
             }
@@ -3964,6 +3965,7 @@ public class DefaultCodegen implements CodegenConfig {
                 for (CodegenParameter cp : formParams) {
                     setParameterContentType(cp, requestBody.getContent().get(contentType));
                     postProcessParameter(cp);
+                    LOGGER.debug(">> FIXME << fromOperation.01.cp.[{}]", cp);
                 }
                 // add form parameters to the beginning of all parameter list
                 if (prependFormOrBodyParameters) {
@@ -6085,7 +6087,7 @@ public class DefaultCodegen implements CodegenConfig {
                 parameters.add(codegenParameter);
             }
         }
-
+        LOGGER.debug(">> FIXME << fromRequestBodyToFormParameters.02.parameters[{}]", parameters);
         return parameters;
     }
 
@@ -6178,6 +6180,7 @@ public class DefaultCodegen implements CodegenConfig {
         CodegenModel codegenModel = null;
         if (StringUtils.isNotBlank(name)) {
             schema.setName(name);
+            LOGGER.debug(">> FIXME << addBodyModelSchema.before.fromModel.name[{}]", name);
             codegenModel = fromModel(name, schema);
         }
         if (codegenModel != null) {
