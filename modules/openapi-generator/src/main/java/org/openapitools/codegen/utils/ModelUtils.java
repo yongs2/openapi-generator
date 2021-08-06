@@ -831,11 +831,14 @@ public class ModelUtils {
     public static Schema getReferencedSchema(OpenAPI openAPI, Schema schema) {
         if (schema != null && StringUtils.isNotEmpty(schema.get$ref())) {
             String name = getSimpleRef(schema.get$ref());
+            LOGGER.debug(">> FIXME << getReferencedSchema.01.schema[{}],getSimpleRef[{}]", schema.getName(), name);
             Schema referencedSchema = getSchema(openAPI, name);
             if (referencedSchema != null) {
+                LOGGER.debug(">> FIXME << getReferencedSchema.02.schema[{}],referencedSchema[{}]", schema.getName(), referencedSchema.getName());
                 return referencedSchema;
             }
         }
+        LOGGER.debug(">> FIXME << getReferencedSchema.02.schema[{}]", schema.getName());
         return schema;
     }
 
@@ -1040,19 +1043,20 @@ public class ModelUtils {
         if (content == null || content.isEmpty()) {
             return null;
         }
-        MediaType mediaType = null;
-        mediaType = (MediaType)content.values().iterator().next();
         Map.Entry<String, MediaType> entry = content.entrySet().iterator().next();
-        LOGGER.info(">> FIXME << getSchemaFromContent, content.size()[{}],containsKey[{}],mediaType[{}]", content.size(), content.containsKey("multipart/related"),mediaType);
+        LOGGER.info(">> FIXME << getSchemaFromContent, content.size()[{}],containsKey[{}],Key[{}],MediaType[{}]", content.size(), content.containsKey("multipart/related"), entry.getKey(), entry.getValue());
         if (content.size() > 1) {
             if (content.containsKey("multipart/related")) {
-                mediaType = (MediaType)content.get("multipart/related");
                 LOGGER.warn("Multiple schemas found in content, returning \"multipart/related\"");
             } else {
                 // Other content types are currently ignored by codegen. If you see this warning,
                 // reorder the OAS spec to put the desired content type first.
                 once(LOGGER).warn("Multiple schemas found in the OAS 'content' section, returning only the first one ({})",
                         entry.getKey());
+            }
+        } else {
+            if (content.containsKey("multipart/related")) {
+                LOGGER.warn(">> FIXME << getSchemaFromContent, Multiple schemas found in content, returning \"multipart/related\"");
             }
         }
         return entry.getValue().getSchema();

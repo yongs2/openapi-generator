@@ -813,6 +813,7 @@ public class DefaultCodegen implements CodegenConfig {
     @Override
     @SuppressWarnings("unused")
     public void preprocessOpenAPI(OpenAPI openAPI) {
+        LOGGER.info(">> FIXME << preprocessOpenAPI.00.useOneOfInterfaces[{}]", useOneOfInterfaces);
         if (useOneOfInterfaces) {
             // we process the openapi schema here to find oneOf schemas and create interface models for them
             Map<String, Schema> schemas = new HashMap<String, Schema>(openAPI.getComponents().getSchemas());
@@ -828,6 +829,7 @@ public class DefaultCodegen implements CodegenConfig {
                         String opId = getOrGenerateOperationId(op.getValue(), e.getKey(), op.getKey().toString());
                         // process request body
                         RequestBody b = ModelUtils.getReferencedRequestBody(openAPI, op.getValue().getRequestBody());
+                        LOGGER.info(">> FIXME << preprocessOpenAPI.01.pathItems.key[{}],opId[{}]", e.getKey(), opId);
                         Schema requestSchema = null;
                         if (b != null) {
                             requestSchema = ModelUtils.getSchemaFromRequestBody(b);
@@ -854,6 +856,7 @@ public class DefaultCodegen implements CodegenConfig {
             for (Map.Entry<String, Schema> e : schemas.entrySet()) {
                 Schema s = e.getValue();
                 Map<String, Schema> props = s.getProperties();
+                LOGGER.info(">> FIXME << preprocessOpenAPI.02.schemas.key[{}],props[{}]", e.getKey(), props);
                 if (props == null) {
                     props = new HashMap<String, Schema>();
                 }
@@ -868,7 +871,7 @@ public class DefaultCodegen implements CodegenConfig {
                 String n = toModelName(e.getKey());
                 Schema s = e.getValue();
                 String nOneOf = toModelName(n + "OneOf");
-                LOGGER.info(">> FIXME << toModelName=[{}],value[{}]", n, s);
+                LOGGER.info(">> FIXME << preprocessOpenAPI.03.schemas.key[{}],nOneOf[{}]", n, nOneOf);
                 if (ModelUtils.isComposedSchema(s)) {
                     if (e.getKey().contains("/")) {
                         // if this is property schema, we also need to generate the oneOf interface model
@@ -3958,7 +3961,7 @@ public class DefaultCodegen implements CodegenConfig {
             }
             if (contentType != null &&
                     (contentType.startsWith("application/x-www-form-urlencoded") ||
-                            contentType.startsWith("multipart"))) {
+                            contentType.startsWith("multipart/form-data"))) {
                 // process form parameters
                 formParams = fromRequestBodyToFormParameters(requestBody, imports);
                 op.isMultipart = contentType.startsWith("multipart");
@@ -6026,7 +6029,9 @@ public class DefaultCodegen implements CodegenConfig {
         List<CodegenParameter> parameters = new ArrayList<>();
         LOGGER.debug("debugging fromRequestBodyToFormParameters= {}", body);
         Schema schema = ModelUtils.getSchemaFromRequestBody(body);
+        LOGGER.debug(">> FIXME << fromRequestBodyToFormParameters.01.getSchemaFromRequestBody[{}]", schema);
         schema = ModelUtils.getReferencedSchema(this.openAPI, schema);
+        LOGGER.debug(">> FIXME << fromRequestBodyToFormParameters.02.getReferencedSchema[{}]", schema);
         List<String> allRequired = new ArrayList<String>();
         Map<String, Schema> properties = new LinkedHashMap<>();
         addProperties(properties, allRequired, schema);
