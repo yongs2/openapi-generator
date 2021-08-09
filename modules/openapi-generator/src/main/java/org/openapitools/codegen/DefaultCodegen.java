@@ -2502,7 +2502,7 @@ public class DefaultCodegen implements CodegenConfig {
                         
                         List<String> reqs = interfaceSchema.getRequired();
                         if ((reqs != null) && (reqs.size() > 0)) {
-                            interfaceSchema.set$ref(reqs.get(0));
+                            interfaceSchema.set$ref(reqs.get(0));   // FIXME: force to set ref
                             LOGGER.info(">> FIXME << 04.interfaceSchema.ref[{}],required[{}],type[{}]", interfaceSchema.get$ref(), interfaceSchema.getRequired(), interfaceSchema.getType());
                             continue;
                         } else {
