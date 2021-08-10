@@ -3968,7 +3968,7 @@ public class DefaultCodegen implements CodegenConfig {
                 for (CodegenParameter cp : formParams) {
                     setParameterContentType(cp, requestBody.getContent().get(contentType));
                     postProcessParameter(cp);
-                    LOGGER.debug(">> FIXME << fromOperation.01.cp.[{}]", cp);
+                    LOGGER.debug(">> FIXME << fromOperation.01.formParams.cp=[{}]", cp);
                 }
                 // add form parameters to the beginning of all parameter list
                 if (prependFormOrBodyParameters) {
@@ -3990,6 +3990,7 @@ public class DefaultCodegen implements CodegenConfig {
 
                 bodyParams.add(bodyParam);
 
+                LOGGER.debug(">> FIXME << fromOperation.02.bodyParam=[{}]", bodyParam);
                 if (prependFormOrBodyParameters) {
                     allParams.add(bodyParam);
                 }

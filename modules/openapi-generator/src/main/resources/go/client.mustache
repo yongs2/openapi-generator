@@ -720,6 +720,12 @@ func setBody(body interface{}, contentType string) (bodyBuf *bytes.Buffer, err e
 		_, err = bodyBuf.ReadFrom(*fp)
 	} else if b, ok := body.([]byte); ok {
 		_, err = bodyBuf.Write(b)
+	} else if b, ok := body.(*[]byte); ok {
+		if b != nil {
+			_, err = bodyBuf.Write(*b)
+		} else {
+			err = fmt.Errorf("body is NIL")
+		}
 	} else if s, ok := body.(string); ok {
 		_, err = bodyBuf.WriteString(s)
 	} else if s, ok := body.(*string); ok {
