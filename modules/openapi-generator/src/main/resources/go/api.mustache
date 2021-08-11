@@ -42,8 +42,7 @@ type {{classname}} interface {
 	{{#isDeprecated}}
 	// Deprecated
 	{{/isDeprecated}}
-
-	{{nickname}}Execute(r {{#structPrefix}}{{&classname}}{{/structPrefix}}Api{{operationId}}Request) ({{#returnType}}{{{.}}}, {{/returnType}}*http.Response, error)
+	{{nickname}}Execute(r {{#structPrefix}}{{&classname}}{{/structPrefix}}Api{{operationId}}Request) ({{#returnType}}{{^isArray}}{{^returnTypeIsPrimitive}}*{{/returnTypeIsPrimitive}}{{/isArray}}{{{.}}}, {{/returnType}}*http.Response, error)
 	{{/operation}}
 }
 {{/generateInterfaces}}
@@ -74,7 +73,7 @@ func (r {{#structPrefix}}{{&classname}}{{/structPrefix}}Api{{operationId}}Reques
 	return r
 }{{/isPathParam}}{{/allParams}}
 
-func (r {{#structPrefix}}{{&classname}}{{/structPrefix}}Api{{operationId}}Request) Execute() ({{#returnType}}{{{.}}}, {{/returnType}}*http.Response, error) {
+func (r {{#structPrefix}}{{&classname}}{{/structPrefix}}Api{{operationId}}Request) Execute() ({{#returnType}}{{^isArray}}{{^returnTypeIsPrimitive}}*{{/returnTypeIsPrimitive}}{{/isArray}}{{{.}}}, {{/returnType}}*http.Response, error) {
 	return r.ApiService.{{nickname}}Execute(r)
 }
 
@@ -89,7 +88,7 @@ func (r {{#structPrefix}}{{&classname}}{{/structPrefix}}Api{{operationId}}Reques
 {{#isDeprecated}}
 Deprecated
 {{/isDeprecated}}
-*/
+ */
 func (a *{{{classname}}}Service) {{{nickname}}}(ctx context.Context{{#pathParams}}, {{paramName}} {{{dataType}}}{{/pathParams}}) {{#structPrefix}}{{&classname}}{{/structPrefix}}Api{{operationId}}Request {
 	return {{#structPrefix}}{{&classname}}{{/structPrefix}}Api{{operationId}}Request{
 		ApiService: a,
@@ -107,7 +106,7 @@ func (a *{{{classname}}}Service) {{{nickname}}}(ctx context.Context{{#pathParams
 {{#isDeprecated}}
 // Deprecated
 {{/isDeprecated}}
-func (a *{{{classname}}}Service) {{nickname}}Execute(r {{#structPrefix}}{{&classname}}{{/structPrefix}}Api{{operationId}}Request) ({{#returnType}}{{{.}}}, {{/returnType}}*http.Response, error) {
+func (a *{{{classname}}}Service) {{nickname}}Execute(r {{#structPrefix}}{{&classname}}{{/structPrefix}}Api{{operationId}}Request) ({{#returnType}}{{^isArray}}{{^returnTypeIsPrimitive}}*{{/returnTypeIsPrimitive}}{{/isArray}}{{{.}}}, {{/returnType}}*http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.Method{{httpMethod}}
 		localVarPostBody     interface{}
@@ -115,7 +114,7 @@ func (a *{{{classname}}}Service) {{nickname}}Execute(r {{#structPrefix}}{{&class
 		localVarFileName     string
 		localVarFileBytes    []byte
 		{{#returnType}}
-		localVarReturnValue  {{{.}}}
+		localVarReturnValue  {{^isArray}}{{^returnTypeIsPrimitive}}*{{/returnTypeIsPrimitive}}{{/isArray}}{{{.}}}
 		{{/returnType}}
 	)
 

@@ -16,7 +16,6 @@ type {{classname}} struct {
 {{#description}}
 	// {{{description}}}
 {{/description}}
-
 {{#deprecated}}
 	// Deprecated
 {{/deprecated}}
@@ -115,11 +114,9 @@ func (o *{{classname}}) Get{{name}}() {{vendorExtensions.x-go-base-type}} {
 {{#isNullable}}
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 {{/isNullable}}
-
 {{#deprecated}}
 // Deprecated
 {{/deprecated}}
-func (o *{{classname}}) Get{{name}}Ok() (*{{vendorExtensions.x-go-base-type}}, bool) {
 func (o *{{classname}}) Get{{name}}Ok() ({{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}{{vendorExtensions.x-go-base-type}}, bool) {
 	if o == nil {{#isNullable}}{{#vendorExtensions.x-golang-is-container}}|| o.{{name}} == nil{{/vendorExtensions.x-golang-is-container}}{{/isNullable}} {
 		return nil, false
@@ -184,7 +181,6 @@ func (o *{{classname}}) Get{{name}}() {{vendorExtensions.x-go-base-type}} {
 {{#isNullable}}
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 {{/isNullable}}
-
 {{#deprecated}}
 // Deprecated
 {{/deprecated}}
