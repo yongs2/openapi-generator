@@ -1,3 +1,4 @@
+// Nullable Object
 type Nullable{{{classname}}} struct {
 	value {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}{{{classname}}}
 	isSet bool
@@ -30,6 +31,80 @@ func (v Nullable{{{classname}}}) MarshalJSON() ([]byte, error) {
 }
 
 func (v *Nullable{{{classname}}}) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+// NullableMap
+type NullableMap{{{classname}}} struct {
+	value {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}map[string]{{{classname}}}
+	isSet bool
+}
+
+func (v NullableMap{{classname}}) Get() {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}map[string]{{classname}} {
+	return v.value
+}
+
+func (v *NullableMap{{classname}}) Set(val {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}map[string]{{classname}}) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableMap{{classname}}) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableMap{{classname}}) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableMap{{classname}}(val {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}map[string]{{classname}}) *NullableMap{{classname}} {
+	return &NullableMap{{classname}}{value: val, isSet: true}
+}
+
+func (v NullableMap{{{classname}}}) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableMap{{{classname}}}) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+// NullableArray
+type NullableArray{{{classname}}} struct {
+	value {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}[]{{{classname}}}
+	isSet bool
+}
+
+func (v NullableArray{{classname}}) Get() {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}[]{{classname}} {
+	return v.value
+}
+
+func (v *NullableArray{{classname}}) Set(val {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}[]{{classname}}) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableArray{{classname}}) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableArray{{classname}}) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableArray{{classname}}(val {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}[]{{classname}}) *NullableArray{{classname}} {
+	return &NullableArray{{classname}}{value: val, isSet: true}
+}
+
+func (v NullableArray{{{classname}}}) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableArray{{{classname}}}) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
