@@ -603,7 +603,7 @@ public abstract class AbstractGoCodegen extends DefaultCodegen implements Codege
         if (property.isContainer || property.isFreeFormObject || property.isAnyType) {
             property.vendorExtensions.put("x-golang-is-container", true);
         }
-        LOGGER.debug(">> FIXME << postProcessModelProperty.model[{}],dataType[{}],E[{}],A[{}],M[{}],N[{}],P[{}]", model.getName(), property.dataType, property.isEnum, property.isArray, property.isMap, property.isNullable, property.isPrimitiveType);
+        LOGGER.debug(">> FIXME << postProcessModelProperty.model[{}],P[{}],dataType[{}],E[{}],A[{}],M[{}],N[{}],P[{}],VE[{}]", model.getName(), property.name, property.dataType, property.isEnum, property.isArray, property.isMap, property.isNullable, property.isPrimitiveType, property.vendorExtensions);
     }
 
     @Override

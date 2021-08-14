@@ -394,20 +394,34 @@ public class GoClientCodegen extends AbstractGoCodegen {
 
                 for (CodegenProperty param : Iterables.concat(model.vars, model.allVars, model.requiredVars, model.optionalVars)) {
                     param.vendorExtensions.put("x-go-base-type", param.dataType);
-                    if (!param.isNullable || param.isMap || param.isArray ||
+                    if (!param.isNullable ||
                             param.isFreeFormObject || param.isAnyType) {
                         continue;
                     }
+                    LOGGER.info(">> FIXME << postProcessModels.01.Name({}),P[{}],M[{}],A[{}],D[{}],C[{}],VE[{}]", model.name, param.name, param.isMap, param.isArray, param.dataType, param.complexType, param.vendorExtensions);
                     if (param.isDateTime) {
                         // Note this could have been done by adding the following line in processOpts(),
                         // however, we only want to represent the DateTime object as NullableTime if
                         // it's marked as nullable in the spec.
                         //    typeMapping.put("DateTime", "NullableTime");
                         param.dataType = "NullableTime";
+                    } else if (param.isMap) {
+                        // map[string]SessionRule => Nullable + Map + SessionRule
+                        param.dataType = "Nullable" + "Map" + param.complexType;
+                    } else if (param.isArray) {
+                        if (param.complexType == null) {
+                            // []string => Nullalbe + Array + String
+                            param.dataType = "Nullable" + "Array" + Character.toUpperCase(param.dataType.charAt(2))
+                                + param.dataType.substring(3);
+                        } else {
+                            // []PolicyControlRequestTrigger => Nullalbe + Array + PolicyControlRequestTrigger
+                            param.dataType = "Nullable" + "Array" + param.complexType;
+                        }
                     } else {
                         param.dataType = "Nullable" + Character.toUpperCase(param.dataType.charAt(0))
                                 + param.dataType.substring(1);
                     }
+                    LOGGER.info(">> FIXME << postProcessModels.02.Name({}),M[{}],A[{}],D[{}],C[{}]", model.name, param.isMap, param.isArray, param.dataType, param.complexType);
                 }
 
                 // additional import for different cases

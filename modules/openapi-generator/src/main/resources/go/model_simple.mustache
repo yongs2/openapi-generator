@@ -19,7 +19,7 @@ type {{classname}} struct {
 {{#deprecated}}
 	// Deprecated
 {{/deprecated}}
-	{{name}} {{^required}}{{^isNullable}}*{{/isNullable}}{{/required}}{{^isNullable}}{{{dataType}}}{{/isNullable}}{{#isNullable}}{{^isMap}}{{^isArray}}{{{dataType}}}{{/isArray}}{{/isMap}}{{#isMap}}NullableMap{{{complexType}}}{{/isMap}}{{#isArray}}NullableArray{{^complexType}}{{{name}}}{{/complexType}}{{#complexType}}{{{complexType}}}{{/complexType}}{{/isArray}}{{/isNullable}} `json:"{{baseName}}{{^required}},omitempty{{/required}}"{{#withXml}} xml:"{{baseName}}{{#isXmlAttribute}},attr{{/isXmlAttribute}}"{{/withXml}}{{#vendorExtensions.x-go-custom-tag}} {{{.}}}{{/vendorExtensions.x-go-custom-tag}}`
+	{{name}} {{^required}}{{^isNullable}}{{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}{{/isNullable}}{{/required}}{{{dataType}}} `json:"{{baseName}}{{^required}},omitempty{{/required}}"{{#withXml}} xml:"{{baseName}}{{#isXmlAttribute}},attr{{/isXmlAttribute}}"{{/withXml}}{{#vendorExtensions.x-go-custom-tag}} {{{.}}}{{/vendorExtensions.x-go-custom-tag}}`
 {{/vars}}
 {{#isAdditionalPropertiesTrue}}
 	AdditionalProperties map[string]interface{}
@@ -91,18 +91,13 @@ func New{{classname}}WithDefaults() *{{classname}} {
 // Deprecated
 {{/deprecated}}
 func (o *{{classname}}) Get{{name}}() {{vendorExtensions.x-go-base-type}} {
-	if o == nil{{#isNullable}}{{^vendorExtensions.x-golang-is-container}} || o.{{name}}.Get() == nil{{/vendorExtensions.x-golang-is-container}}{{/isNullable}} {
+	if o == nil{{#isNullable}} || o.{{name}}.Get() == nil{{/isNullable}} {
 		var ret {{vendorExtensions.x-go-base-type}}
 		return ret
 	}
 
 {{#isNullable}}
-{{#vendorExtensions.x-golang-is-container}}
-	return o.{{name}}
-{{/vendorExtensions.x-golang-is-container}}
-{{^vendorExtensions.x-golang-is-container}}
 	return *o.{{name}}.Get()
-{{/vendorExtensions.x-golang-is-container}}
 {{/isNullable}}
 {{^isNullable}}
 	return o.{{name}}
@@ -117,17 +112,12 @@ func (o *{{classname}}) Get{{name}}() {{vendorExtensions.x-go-base-type}} {
 {{#deprecated}}
 // Deprecated
 {{/deprecated}}
-func (o *{{classname}}) Get{{name}}Ok() ({{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}{{vendorExtensions.x-go-base-type}}, bool) {
-	if o == nil {{#isNullable}}{{#vendorExtensions.x-golang-is-container}}|| o.{{name}} == nil{{/vendorExtensions.x-golang-is-container}}{{/isNullable}} {
+func (o *{{classname}}) Get{{name}}Ok() ({{^isNullable}}{{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}{{/isNullable}}{{#isNullable}}*{{/isNullable}}{{vendorExtensions.x-go-base-type}}, bool) {
+	if o == nil {{#isNullable}}|| o.{{name}}.Get() == nil{{/isNullable}} {
 		return nil, false
 	}
 {{#isNullable}}
-{{#vendorExtensions.x-golang-is-container}}
-	return {{^isArray}}{{^isFreeFormObject}}&{{/isFreeFormObject}}{{/isArray}}o.{{name}}, true
-{{/vendorExtensions.x-golang-is-container}}
-{{^vendorExtensions.x-golang-is-container}}
 	return o.{{name}}.Get(), o.{{name}}.IsSet()
-{{/vendorExtensions.x-golang-is-container}}
 {{/isNullable}}
 {{^isNullable}}
 	return {{^isArray}}{{^isFreeFormObject}}&{{/isFreeFormObject}}{{/isArray}}o.{{name}}, true
@@ -140,12 +130,7 @@ func (o *{{classname}}) Get{{name}}Ok() ({{^isArray}}{{^isFreeFormObject}}*{{/is
 {{/deprecated}}
 func (o *{{classname}}) Set{{name}}(v {{vendorExtensions.x-go-base-type}}) {
 {{#isNullable}}
-{{#vendorExtensions.x-golang-is-container}}
-	o.{{name}} = v
-{{/vendorExtensions.x-golang-is-container}}
-{{^vendorExtensions.x-golang-is-container}}
 	o.{{name}}.Set(&v)
-{{/vendorExtensions.x-golang-is-container}}
 {{/isNullable}}
 {{^isNullable}}
 	o.{{name}} = v
@@ -159,17 +144,12 @@ func (o *{{classname}}) Set{{name}}(v {{vendorExtensions.x-go-base-type}}) {
 // Deprecated
 {{/deprecated}}
 func (o *{{classname}}) Get{{name}}() {{vendorExtensions.x-go-base-type}} {
-	if o == nil {{^isNullable}}|| o.{{name}} == nil{{/isNullable}}{{#isNullable}}{{^vendorExtensions.x-golang-is-container}}|| o.{{name}}.Get() == nil{{/vendorExtensions.x-golang-is-container}}{{/isNullable}} {
+	if o == nil {{^isNullable}}|| o.{{name}} == nil{{/isNullable}}{{#isNullable}}|| o.{{name}}.Get() == nil{{/isNullable}} {
 		var ret {{vendorExtensions.x-go-base-type}}
 		return ret
 	}
 {{#isNullable}}
-{{#vendorExtensions.x-golang-is-container}}
-	return o.{{name}}
-{{/vendorExtensions.x-golang-is-container}}
-{{^vendorExtensions.x-golang-is-container}}
 	return *o.{{name}}.Get()
-{{/vendorExtensions.x-golang-is-container}}
 {{/isNullable}}
 {{^isNullable}}
 	return {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}o.{{name}}
@@ -184,17 +164,12 @@ func (o *{{classname}}) Get{{name}}() {{vendorExtensions.x-go-base-type}} {
 {{#deprecated}}
 // Deprecated
 {{/deprecated}}
-func (o *{{classname}}) Get{{name}}Ok() ({{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}{{vendorExtensions.x-go-base-type}}, bool) {
-	if o == nil {{^isNullable}}|| o.{{name}} == nil{{/isNullable}}{{#isNullable}}{{#vendorExtensions.x-golang-is-container}}|| o.{{name}} == nil{{/vendorExtensions.x-golang-is-container}}{{/isNullable}} {
+func (o *{{classname}}) Get{{name}}Ok() ({{^isNullable}}{{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}{{/isNullable}}{{#isNullable}}*{{/isNullable}}{{vendorExtensions.x-go-base-type}}, bool) {
+	if o == nil {{^isNullable}}|| o.{{name}} == nil{{/isNullable}}{{#isNullable}}|| o.{{name}}.Get() == nil{{/isNullable}} {
 		return nil, false
 	}
 {{#isNullable}}
-{{#vendorExtensions.x-golang-is-container}}
-	return {{^isArray}}{{^isFreeFormObject}}&{{/isFreeFormObject}}{{/isArray}}o.{{name}}, true
-{{/vendorExtensions.x-golang-is-container}}
-{{^vendorExtensions.x-golang-is-container}}
 	return o.{{name}}.Get(), o.{{name}}.IsSet()
-{{/vendorExtensions.x-golang-is-container}}
 {{/isNullable}}
 {{^isNullable}}
 	return o.{{name}}, true
@@ -203,7 +178,7 @@ func (o *{{classname}}) Get{{name}}Ok() ({{^isArray}}{{^isFreeFormObject}}*{{/is
 
 // Has{{name}} returns a boolean if a field has been set.
 func (o *{{classname}}) Has{{name}}() bool {
-	if o != nil && {{^isNullable}}o.{{name}} != nil{{/isNullable}}{{#isNullable}}{{#vendorExtensions.x-golang-is-container}}o.{{name}} != nil{{/vendorExtensions.x-golang-is-container}}{{^vendorExtensions.x-golang-is-container}}o.{{name}}.IsSet(){{/vendorExtensions.x-golang-is-container}}{{/isNullable}} {
+	if o != nil && {{^isNullable}}o.{{name}} != nil{{/isNullable}}{{#isNullable}}o.{{name}}.IsSet(){{/isNullable}} {
 		return true
 	}
 
@@ -216,19 +191,13 @@ func (o *{{classname}}) Has{{name}}() bool {
 {{/deprecated}}
 func (o *{{classname}}) Set{{name}}(v {{vendorExtensions.x-go-base-type}}) {
 {{#isNullable}}
-{{#vendorExtensions.x-golang-is-container}}
-	o.{{name}} = v
-{{/vendorExtensions.x-golang-is-container}}
-{{^vendorExtensions.x-golang-is-container}}
-	o.{{name}}.Set({{^isArray}}{{^isFreeFormObject}}&{{/isFreeFormObject}}{{/isArray}}v)
-{{/vendorExtensions.x-golang-is-container}}
+	o.{{name}}.Set(&v)
 {{/isNullable}}
 {{^isNullable}}
 	o.{{name}} = {{^isArray}}{{^isFreeFormObject}}&{{/isFreeFormObject}}{{/isArray}}v
 {{/isNullable}}
 }
 {{#isNullable}}
-{{^vendorExtensions.x-golang-is-container}}
 // Set{{name}}Nil sets the value for {{name}} to be an explicit nil
 func (o *{{classname}}) Set{{name}}Nil() {
 	o.{{name}}.Set(nil)
@@ -238,7 +207,6 @@ func (o *{{classname}}) Set{{name}}Nil() {
 func (o *{{classname}}) Unset{{name}}() {
 	o.{{name}}.Unset()
 }
-{{/vendorExtensions.x-golang-is-container}}
 {{/isNullable}}
 
 {{/required}}
@@ -267,17 +235,9 @@ func (o {{classname}}) MarshalJSON() ([]byte, error) {
 	{{#vars}}
 	{{! if argument is nullable, only serialize it if it is set}}
 	{{#isNullable}}
-	{{#vendorExtensions.x-golang-is-container}}
-	{{! support for container fields is not ideal at this point because of lack of Nullable* types}}
-	if o.{{name}} != nil {
-		toSerialize["{{baseName}}"] = o.{{name}}
-	}
-	{{/vendorExtensions.x-golang-is-container}}
-	{{^vendorExtensions.x-golang-is-container}}
 	if {{#required}}true{{/required}}{{^required}}o.{{name}}.IsSet(){{/required}} {
 		toSerialize["{{baseName}}"] = o.{{name}}.Get()
 	}
-	{{/vendorExtensions.x-golang-is-container}}
 	{{/isNullable}}
 	{{! if argument is not nullable, don't set it if it is nil}}
 	{{^isNullable}}
