@@ -256,6 +256,9 @@ public class DefaultCodegen implements CodegenConfig {
     // A cache to efficiently lookup a Schema instance based on the return value of `toModelName()`.
     private Map<String, Schema> modelNameToSchemaCache;
 
+    // A cache to efficiently lookup schema `toModelName()` based on the schema Key
+    private Map<String, String> schemaKeyToModelNameCache = new HashMap<>();
+
     @Override
     public List<CliOption> cliOptions() {
         return cliOptions;
@@ -2326,7 +2329,13 @@ public class DefaultCodegen implements CodegenConfig {
      */
     @Override
     public String toModelName(final String name) {
-        return camelize(modelNamePrefix + "_" + name + "_" + modelNameSuffix);
+        if (schemaKeyToModelNameCache.containsKey(name)) {
+            return schemaKeyToModelNameCache.get(name);
+        }
+
+        String camelizedName = camelize(modelNamePrefix + "_" + name + "_" + modelNameSuffix);
+        schemaKeyToModelNameCache.put(name, camelizedName);
+        return camelizedName;
     }
 
     private static class NamedSchema {
@@ -2486,6 +2495,9 @@ public class DefaultCodegen implements CodegenConfig {
 
             // interfaces (schemas defined in allOf, anyOf, oneOf)
             List<Schema> interfaces = ModelUtils.getInterfaces(composed);
+            List<CodegenProperty> anyOfProps = new ArrayList<>();
+            List<CodegenProperty> allOfProps = new ArrayList<>();
+            List<CodegenProperty> oneOfProps = new ArrayList<>();
             if (!interfaces.isEmpty()) {
                 // m.interfaces is for backward compatibility
                 if (m.interfaces == null)
@@ -2498,6 +2510,7 @@ public class DefaultCodegen implements CodegenConfig {
                     if (StringUtils.isBlank(interfaceSchema.get$ref())) {
                         // primitive type
                         String languageType = getTypeDeclaration(interfaceSchema);
+                        CodegenProperty interfaceProperty = fromProperty(languageType, interfaceSchema);
                         LOGGER.info(">> FIXME << 03.interfaceSchema.getRequired()=[{}],languageType=[{}]", interfaceSchema.getRequired(), languageType);
                         
                         List<String> reqs = interfaceSchema.getRequired();
@@ -2507,10 +2520,9 @@ public class DefaultCodegen implements CodegenConfig {
                             continue;
                         } else {
                             if (ModelUtils.isArraySchema(interfaceSchema) || ModelUtils.isMapSchema(interfaceSchema)) {
-                                CodegenProperty cp = fromProperty("composedSchemaImports", interfaceSchema);
-                                while (cp != null) {
-                                    addImport(m, cp.complexType);
-                                    cp = cp.items;
+                                while (interfaceProperty != null) {
+                                    addImport(m, interfaceProperty.complexType);
+                                    interfaceProperty = interfaceProperty.items;
                                 }
                             }
 
@@ -2520,6 +2532,7 @@ public class DefaultCodegen implements CodegenConfig {
                                     LOGGER.warn("{} (anyOf schema) already has `{}` defined and therefore it's skipped.", m.name, languageType);
                                 } else {
                                     m.anyOf.add(languageType);
+                                    anyOfProps.add(interfaceProperty);
                                 }
                             } else if (composed.getOneOf() != null) {
                                 LOGGER.info(">> FIXME << 07.composed.getOneOf()=[{}],m.oneOf.contains({}})=[{}]", composed.getOneOf(), languageType, m.oneOf.contains(languageType));
@@ -2527,6 +2540,7 @@ public class DefaultCodegen implements CodegenConfig {
                                     LOGGER.warn("{} (oneOf schema) already has `{}` defined and therefore it's skipped.", m.name, languageType);
                                 } else {
                                     m.oneOf.add(languageType);
+                                    oneOfProps.add(interfaceProperty);
                                 }
                             } else if (composed.getAllOf() != null) {
                                 LOGGER.info(">> FIXME << 09.composed.getAllOf()=[{}]", composed.getAllOf());
@@ -2545,6 +2559,7 @@ public class DefaultCodegen implements CodegenConfig {
                         refSchema = allDefinitions.get(ref);
                     }
                     final String modelName = toModelName(ref);
+                    CodegenProperty interfaceProperty = fromProperty(modelName, interfaceSchema);
                     m.interfaces.add(modelName);
                     addImport(m, modelName);
                     if (allDefinitions != null && refSchema != null) {
@@ -2563,16 +2578,23 @@ public class DefaultCodegen implements CodegenConfig {
 
                     if (composed.getAnyOf() != null) {
                         m.anyOf.add(modelName);
+                        anyOfProps.add(interfaceProperty);
                     } else if (composed.getOneOf() != null) {
                         m.oneOf.add(modelName);
+                        oneOfProps.add(interfaceProperty);
                     } else if (composed.getAllOf() != null) {
                         m.allOf.add(modelName);
+                        allOfProps.add(interfaceProperty);
                     } else {
                         LOGGER.error("Composed schema has incorrect anyOf, allOf, oneOf defined: {}", composed);
                     }
                     LOGGER.info(">> FIXME << 20.composed.ref[{}],modelName=[{}],required=[{}],allRequired=[{}]", ref, modelName, required, allRequired);
                 }
             }
+
+            m.vendorExtensions.put("x-oneOf-as-properties", oneOfProps);
+            m.vendorExtensions.put("x-allOf-as-properties", allOfProps);
+            m.vendorExtensions.put("x-anyOf-as-properties", anyOfProps);
 
             if (parent != null && composed.getAllOf() != null) { // set parent for allOf only
                 m.parentSchema = parentName;
@@ -2599,16 +2621,6 @@ public class DefaultCodegen implements CodegenConfig {
 
                         // includes child's properties (all, required) in allProperties, allRequired
                         addProperties(allProperties, allRequired, component);
-
-                        // Schema notSchema = component.getNot();
-                        // if (notSchema == null || notSchema.getRequired() == null) break;
-                        // List<String> notRequiredList = notSchema.getRequired();
-                        // for (String notRequiredKey : notRequiredList) {
-                        //     required.remove(notRequiredKey);
-                        //     allRequired.remove(notRequiredKey);
-                        //     LOGGER.error(">> FIXME << notRequiredKey=[{}]", notRequiredKey);
-                        // }
-                        // break;
                     }
                     break; // at most one child only
                 }
@@ -3452,8 +3464,6 @@ public class DefaultCodegen implements CodegenConfig {
             if (allowableValues.size() > 0) {
                 property.allowableValues = allowableValues;
             }
-            // property.isEnum = true; // FIXME??
-            // LOGGER.error(">> FIXME << property.isEnum=[{}]", property.isEnum);
         }
 
         if (referencedSchema.getNullable() != null) {
@@ -5054,28 +5064,6 @@ public class DefaultCodegen implements CodegenConfig {
                 LOGGER.warn("Please report the issue. There shouldn't be null property for {}", key);
             } else {
                 final CodegenProperty cp = fromProperty(key, prop);
-                
-                // if (prop instanceof ComposedSchema) {
-                //     LOGGER.info(">> FIXME << addVars.01.cp.dataType=[{}]", cp.dataType);
-                //     ComposedSchema cs = (ComposedSchema)prop;
-                //     Boolean has$ref = false;
-                //     Boolean hasProperties = false;
-                //     if (cs.getAllOf() != null) {
-                //         for (Schema s2 : cs.getAllOf()) {
-                //         if (s2.get$ref() != null) {
-                //             has$ref = true;
-                //             cp.dataType = toModelName(getSingleSchemaType(s2));
-                //             LOGGER.info(">> FIXME << addVars.02.cp.dataType=[{}]", cp.dataType);
-                //         }
-                //         if (s2.getProperties() == null) continue;
-                //             hasProperties = true;
-                //         }
-                //     }
-                //     if (has$ref.booleanValue() && hasProperties.booleanValue()) {
-                //         cp.dataType = toModelName(cp.dataType + cm.getName());
-                //         LOGGER.info(">> FIXME << addVars.03.cp.dataType=[{}]", cp.dataType);
-                //     }
-                // }
                 cp.required = mandatory.contains(key);
                 vars.add(cp);
                 if (cm == null) {
