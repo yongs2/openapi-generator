@@ -2505,7 +2505,7 @@ public class DefaultCodegen implements CodegenConfig {
 
                 for (Schema interfaceSchema : interfaces) {
                     interfaceSchema = unaliasSchema(interfaceSchema, importMapping);
-                    LOGGER.info(">> FIXME << 03.interfaceSchema.ref[{}],required[{}],type[{}]", interfaceSchema.get$ref(), interfaceSchema.getRequired(), interfaceSchema.getType());
+                    LOGGER.info(">> FIXME << 02.interfaceSchema.ref[{}],required[{}],type[{}],pattern[{}]", interfaceSchema.get$ref(), interfaceSchema.getRequired(), interfaceSchema.getType(), interfaceSchema.getPattern());
 
                     if (StringUtils.isBlank(interfaceSchema.get$ref())) {
                         // primitive type
@@ -2543,8 +2543,14 @@ public class DefaultCodegen implements CodegenConfig {
                                     oneOfProps.add(interfaceProperty);
                                 }
                             } else if (composed.getAllOf() != null) {
-                                LOGGER.info(">> FIXME << 09.composed.getAllOf()=[{}]", composed.getAllOf());
+                                LOGGER.info(">> FIXME << 09.composed.getAllOf()=[{}],contains({})=[{}]", composed.getAllOf(), languageType, m.allOf.contains(languageType));
                                 // no need to add primitive type to allOf, which should comprise of schemas (models) only
+                                if (m.allOf.contains(languageType)) {
+                                    LOGGER.warn("{} (allOf schema) already has `{}` defined and therefore it's skipped.", m.name, languageType);
+                                } else {
+                                    m.allOf.add(languageType);
+                                    allOfProps.add(interfaceProperty);
+                                }
                             } else {
                                 LOGGER.error("Composed schema has incorrect anyOf, allOf, oneOf defined: {}", composed);
                             }
@@ -2577,12 +2583,15 @@ public class DefaultCodegen implements CodegenConfig {
                     }
 
                     if (composed.getAnyOf() != null) {
+                        LOGGER.info(">> FIXME << 11.composed.getAnyOf()=[{}],modelName[{}],interfaceProperty[{}]", composed.getAnyOf(), modelName, interfaceProperty);
                         m.anyOf.add(modelName);
                         anyOfProps.add(interfaceProperty);
                     } else if (composed.getOneOf() != null) {
+                        LOGGER.info(">> FIXME << 12.composed.getOneOf()=[{}],modelName[{}],interfaceProperty[{}]", composed.getOneOf(), modelName, interfaceProperty);
                         m.oneOf.add(modelName);
                         oneOfProps.add(interfaceProperty);
                     } else if (composed.getAllOf() != null) {
+                        LOGGER.info(">> FIXME << 13.composed.getAllOf()=[{}],modelName[{}],interfaceProperty[{}]", composed.getAllOf(), modelName, interfaceProperty);
                         m.allOf.add(modelName);
                         allOfProps.add(interfaceProperty);
                     } else {
