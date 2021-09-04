@@ -19,7 +19,10 @@
 #     -o${OUT_DIR} >${OUT_DIR}/ogc_java.log 2>&1
 
 # unit test for test cases
-YAML_NAME=ts_allof_pattern
+# YAML_NAME=ts_allof_pattern
+# YAML_NAME=ts_allof_ref
+# YAML_NAME=ts_anyof_nfprofile
+YAML_NAME=ts_callbacks
 IN_YAML=/out/${YAML_NAME}.yaml
 OUT_DIR=/out/${YAML_NAME}
 

@@ -345,14 +345,18 @@ public abstract class AbstractGoCodegen extends DefaultCodegen implements Codege
                 inner = ModelUtils.unaliasSchema(this.openAPI, inner);
             }
             String typDecl;
+            boolean bNullable = false;
             if (inner != null) {
                 typDecl = getTypeDeclaration(inner);
+                bNullable = inner.getNullable(); // Refer to pull/10268
             } else {
                 typDecl = "interface{}";
             }
+            LOGGER.info(">> FIXME << getTypeDeclaration.01.ArraySchema.Name({}),Type[{}],inner.typDecl[{}],nullable[{}]", p.getName(), getSchemaType(p), typDecl, bNullable);
             return "[]" + typDecl;
         } else if (ModelUtils.isMapSchema(p)) {
             Schema inner = getAdditionalProperties(p);
+            LOGGER.info(">> FIXME << getTypeDeclaration.02.MapSchema.Name({}),Type[{}],inner[{}]", p.getName(), getSchemaType(p), inner.getName());
             return getSchemaType(p) + "[string]" + getTypeDeclaration(ModelUtils.unaliasSchema(this.openAPI, inner));
         }
         //return super.getTypeDeclaration(p);
