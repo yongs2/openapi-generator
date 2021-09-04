@@ -23,7 +23,8 @@ YAML_NAME=ts_allof_pattern
 IN_YAML=/out/${YAML_NAME}.yaml
 OUT_DIR=/out/${YAML_NAME}
 
-mkdir -p /out/${YAML_NAME}/;
+mkdir -p ${OUT_DIR}/;
+rm -f  ${OUT_DIR}/*.go ; rm -f ${OUT_DIR}/docs/*.md;
 java -Dlog.level=debug \
     -jar /root/src/modules/openapi-generator-cli/target/openapi-generator-cli.jar \
     generate -i ${IN_YAML} \
