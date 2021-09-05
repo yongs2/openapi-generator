@@ -88,5 +88,195 @@ Name | Type | Description  | Notes
 [[Back to Model list]](../README.md#documentation-for-models)
 [[Back to README]](../README.md)
 
+{{#callbacks}}
+### Callbacks
+
+    {{#pathSet}}
+### pathSet
+PATH_ID : {{PATH_ID}}
+basePathWithoutHost : {{{basePathWithoutHost}}}
+pathRegEx : {{{pathRegEx}}}
+index : {{{index}}}
+{{#hasPathParams}}
+> hasPathParams
+{{/hasPathParams}}
+    {{/pathSet}}
+    
+    {{#urls}}
+### urls
+expression : {{{expression}}}
+path: {{{path}}}
+
+    {{#requests}}
+### requests
+{{#hasAuthMethods}}
+> hasAuthMethods
+{{/hasAuthMethods}}
+name : {{{name}}}
+scope : {{{scope}}}
+description : {{{description}}}
+operationId : {{{operationId}}}
+httpMethod : {{{httpMethod}}}
+x-http-method : {{{vendorExtensions.x-http-method}}} 
+x-path-id : {{{vendorExtensions.x-path-id}}}
+path: {{{path}}}
+returnBaseType: {{{returnBaseType}}}
+returnType: {{{returnType}}}
+consumes: {{{consumes}}}
+produces: {{{produces}}}
+
+{{#pathParams}}
+### request / PathParams
+name : {{{name}}}
+path : {{{path}}}
+pathName : {{{paramName}}}
+dataType : {{{dataType}}}
+baseName : {{{baseName}}}
+{{/pathParams}}
+
+{{#headerParams}}
+### request / HeaderParams
+name : {{{name}}}
+pathName : {{{paramName}}}
+dataType : {{{dataType}}}
+baseName : {{{baseName}}}
+nameInLowerCase : {{{nameInLowerCase}}}
+{{#required}}
+> requrired
+{{/required}}
+{{/headerParams}}
+
+{{#queryParams}}
+### request / QueryParams
+name : {{{name}}}
+pathName : {{{paramName}}}
+dataType : {{{dataType}}}
+baseName : {{{baseName}}}
+nameInLowerCase : {{{nameInLowerCase}}}
+{{#required}}
+> requrired
+{{/required}}
+{{#isArray}}
+> isArray
+{{/isArray}}
+{{/queryParams}}
+
+{{#bodyParams}}
+### request / bodyParams
+name : {{{name}}}
+pathName : {{{paramName}}}
+dataType : {{{dataType}}}
+baseName : {{{baseName}}}
+nameInLowerCase : {{{nameInLowerCase}}}
+{{#required}}
+> requrired
+{{/required}}
+{{#isArray}}
+> isArray
+{{/isArray}}
+
+{{#vars}}
+### request / bodyParams / vars
+name : {{{name}}}
+dataType : {{{dataType}}}
+baseName : {{{baseName}}}
+nameInLowerCase : {{{nameInLowerCase}}}
+nameInSnakeCase : {{{nameInSnakeCase}}}
+{{/vars}}
+
+{{/bodyParams}}
+
+{{#formParams}}
+### request / formParams
+name : {{{name}}}
+pathName : {{{paramName}}}
+dataType : {{{dataType}}}
+baseName : {{{baseName}}}
+nameInLowerCase : {{{nameInLowerCase}}}
+{{#required}}
+> requrired
+{{/required}}
+{{#isArray}}
+> isArray
+{{/isArray}}
+{{#isBinary}}
+> isBinary
+{{/isBinary}}
+{{/formParams}}
+
+{{#x-consumes-multipart}}
+### x-consumes-multipart
+{{/x-consumes-multipart}}
+
+{{#headers}}
+### request / headers
+name : {{{name}}}
+{{/headers}}
+
+    {{#responses}}
+### responses <- callbacks/urls/requests/responses 으로 연결
+code: {{{code}}}
+message: {{{message}}}
+dataType : {{{dataType}}}
+baseType : {{{baseType}}}
+baseName : {{{baseName}}}
+nameInLowerCase : {{{nameInLowerCase}}}
+message : {{{message}}}
+imports: {{{imports}}}
+
+{{#headerParams}}
+### responses / headerParams <- callbacks/urls/requests/headerParams
+name : {{{name}}}
+pathName : {{{paramName}}}
+dataType : {{{dataType}}}
+baseType : {{{baseType}}}
+baseName : {{{baseName}}}
+nameInLowerCase : {{{nameInLowerCase}}}
+{{#required}}
+> requrired
+{{/required}}
+{{/headerParams}}
+
+{{#headers}}
+### responses / headers <- callbacks/urls/request/headers 와 동일
+name : {{{name}}}
+dataType : {{{dataType}}}
+baseType : {{{baseType}}}
+baseName : {{{baseName}}}
+nameInLowerCase : {{{nameInLowerCase}}}
+{{/headers}}
+
+{{#bodyParams}}
+### responses / bodyParams <- callbacks/urls/request/bodyParams 와 동일
+name : {{{name}}}
+pathName : {{{paramName}}}
+dataType : {{{dataType}}}
+baseType : {{{baseType}}}
+baseName : {{{baseName}}}
+nameInLowerCase : {{{nameInLowerCase}}}
+    {{#required}}
+> requrired
+    {{/required}}
+    {{#isArray}}
+> isArray
+    {{/isArray}}
+    {{#vars}}
+### responses / bodyParams / vars <- callbacks/urls/request/bodyParams/vars 와 동일
+name : {{{name}}}
+dataType : {{{dataType}}}
+baseType : {{{baseType}}}
+baseName : {{{baseName}}}
+nameInLowerCase : {{{nameInLowerCase}}}
+nameInSnakeCase : {{{nameInSnakeCase}}}
+    {{/vars}}
+{{/bodyParams}}
+
+    {{/responses}}
+
+    {{/requests}}
+
+    {{/urls}}
+{{/callbacks}}
+
 {{/operation}}
 {{/operations}}
