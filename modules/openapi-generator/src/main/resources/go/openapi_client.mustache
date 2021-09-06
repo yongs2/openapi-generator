@@ -1,0 +1,495 @@
+{{>partial_header}}
+package openapi_common
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"encoding/xml"
+	"errors"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"mime/multipart"
+	"net/http"
+    "net/textproto"
+	"net/url"
+	"os"
+	"path/filepath"
+	"reflect"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
+	"unicode/utf8"
+
+	"golang.org/x/oauth2"
+
+    // h2c client
+	"crypto/tls"
+	"golang.org/x/net/http2"
+	"net"
+	{{#withAWSV4Signature}}
+	awsv4 "github.com/aws/aws-sdk-go/aws/signer/v4"
+	awscredentials "github.com/aws/aws-sdk-go/aws/credentials"
+	{{/withAWSV4Signature}}
+)
+
+var (
+	JsonCheck = regexp.MustCompile(`(?i:(?:application|text)/(?:(?:vnd\.[^;]+)|(?:(?:[a-z]+-)?patch|problem)\+)?json)`)
+	XmlCheck  = regexp.MustCompile(`(?i:(?:application|text)/xml)`)
+	MultipartRelatedCheck = regexp.MustCompile("(?i:multipart/related)")
+)
+
+var (
+	HttpClient  *http.Client //= http.DefaultClient
+	Http2Client *http.Client
+)
+
+func init() {
+	HttpClient = &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // for Insecure Test for Kong
+		},
+	}
+
+	Http2Client = &http.Client{
+		Transport: &http2.Transport{
+			AllowHTTP: true,
+			DialTLS: func(network, addr string, cfg *tls.Config) (net.Conn, error) {
+				return net.Dial(network, addr)
+			},
+		},
+	}
+}
+
+func GetHttpClient() *http.Client { return HttpClient }
+
+func GetHttp2Client() *http.Client { return Http2Client }
+
+func atoi(in string) (int, error) {
+	return strconv.Atoi(in)
+}
+
+// selectHeaderContentType select a content type from the available list.
+func SelectHeaderContentType(contentTypes []string) string {
+	if len(contentTypes) == 0 {
+		return ""
+	}
+	if contains(contentTypes, "application/json") {
+		return "application/json"
+	}
+	return contentTypes[0] // use the first content type specified in 'consumes'
+}
+
+// selectHeaderAccept join all accept types and return
+func SelectHeaderAccept(accepts []string) string {
+	if len(accepts) == 0 {
+		return ""
+	}
+
+	if contains(accepts, "application/json") {
+		return "application/json"
+	}
+
+	return strings.Join(accepts, ",")
+}
+
+// contains is a case insensitive match, finding needle in a haystack
+func contains(haystack []string, needle string) bool {
+	for _, a := range haystack {
+		if strings.ToLower(a) == strings.ToLower(needle) {
+			return true
+		}
+	}
+	return false
+}
+
+// Verify optional parameters are of the correct type.
+func TypeCheckParameter(obj interface{}, expected string, name string) error {
+	// Make sure there is an object.
+	if obj == nil {
+		return nil
+	}
+
+	// Check the type is as expected.
+	if reflect.TypeOf(obj).String() != expected {
+		return fmt.Errorf("Expected %s to be of type %s but received %s.", name, expected, reflect.TypeOf(obj).String())
+	}
+	return nil
+}
+
+// parameterToString convert interface{} parameters to string, using a delimiter if format is provided.
+func ParameterToString(obj interface{}, collectionFormat string) string {
+	var delimiter string
+
+	switch collectionFormat {
+	case "pipes":
+		delimiter = "|"
+	case "ssv":
+		delimiter = " "
+	case "tsv":
+		delimiter = "\t"
+	case "csv":
+		delimiter = ","
+	}
+
+	if reflect.TypeOf(obj).Kind() == reflect.Slice {
+		return strings.Trim(strings.Replace(fmt.Sprint(obj), " ", delimiter, -1), "[]")
+	} else if t, ok := obj.(time.Time); ok {
+		return t.Format(time.RFC3339)
+	}
+
+	return fmt.Sprintf("%v", obj)
+}
+
+// helper for converting interface{} parameters to json strings
+func ParameterToJson(obj interface{}) (string, error) {
+	jsonBuf, err := json.Marshal(obj)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonBuf), err
+}
+
+func parseMultipartFieldParameters(str string) (contentType string, ref string, class string) {
+	for _, part := range strings.Split(str, ",") {
+		switch {
+		case strings.HasPrefix(part, "contentType:"):
+			contentType = part[12:]
+		case strings.HasPrefix(part, "ref:"):
+			ref = part[4:]
+		case strings.HasPrefix(part, "class:"):
+			class = part[6:]
+		}
+	}
+	return
+}
+
+func getContentID(v reflect.Value, ref string, class string) (contentID string, err error) {
+	recursiveVal := v
+	if ref[0] == '{' {
+		contentID = ref[1 : len(ref)-1]
+		return
+	}
+	if class != "" {
+		var lastVal reflect.Value
+		for _, part := range strings.Split(class, ".") {
+			lastVal = recursiveVal
+			recursiveVal = recursiveVal.FieldByName(part)
+			if !recursiveVal.IsValid() {
+				return "", fmt.Errorf("Do not have reference field %s in %s for multipart", part, lastVal.Type().String())
+			}
+			if recursiveVal.Kind() == reflect.Ptr {
+				if recursiveVal.IsNil() {
+					return "", nil
+				}
+				recursiveVal = recursiveVal.Elem()
+			}
+		}
+		fieldName := recursiveVal.String()
+		if i := strings.IndexRune(fieldName, '-'); i != -1 {
+			fieldName = fieldName[:i]
+		}
+		fieldName = fieldName[:1] + strings.ToLower(fieldName[1:]) + "Info"
+		recursiveVal = lastVal.FieldByName(fieldName)
+		if recursiveVal.Kind() == reflect.Ptr {
+			if recursiveVal.IsNil() {
+				return "", nil
+			}
+			recursiveVal = recursiveVal.Elem()
+		}
+	}
+
+	for _, part := range strings.Split(ref, ".") {
+		lastValType := recursiveVal.Type()
+		listIndex := -1
+
+		if start := strings.IndexRune(part, '['); start != -1 {
+			end := strings.IndexRune(part, ']')
+			listIndex, err = strconv.Atoi(part[start+1 : end])
+			if err != nil {
+				return "", err
+			}
+			part = part[:start]
+			recursiveVal = recursiveVal.FieldByName(part)
+		} else if start = strings.IndexRune(part, '('); start != -1 {
+			end := strings.IndexRune(part, ')')
+			fieldTypeString := part[start+1 : end]
+			var i int
+			for i = 0; i < lastValType.NumField(); i++ {
+				if fieldType := lastValType.Field(i).Type; strings.HasSuffix(fieldType.String(), fieldTypeString) {
+					recursiveVal = recursiveVal.Field(i)
+					break
+				}
+			}
+			if i == lastValType.NumField() {
+				return "", fmt.Errorf("Do not have reference field Type %s in %s for multipart", fieldTypeString, lastValType.String())
+			}
+		} else {
+			recursiveVal = recursiveVal.FieldByName(part)
+		}
+
+		if !recursiveVal.IsValid() {
+			return "", fmt.Errorf("Do not have reference field %s in %s for multipart", part, lastValType.String())
+		}
+		if recursiveVal.Kind() == reflect.Ptr {
+			if recursiveVal.IsNil() {
+				return "", nil
+			}
+			recursiveVal = recursiveVal.Elem()
+		}
+		if listIndex >= 0 {
+			if listIndex >= recursiveVal.Len() {
+				return "", nil
+			}
+			recursiveVal = recursiveVal.Index(listIndex)
+		}
+	}
+	contentID = recursiveVal.String()
+	return
+}
+
+func MultipartEncode(v interface{}, body io.Writer) (string, error) {
+	val := reflect.Indirect(reflect.ValueOf(v))
+	w := multipart.NewWriter(body)
+
+	structType := val.Type()
+
+	for i := 0; i < val.NumField(); i++ {
+		if val.Field(i).IsNil() {
+			continue
+		}
+		contentType, ref, class := parseMultipartFieldParameters(structType.Field(i).Tag.Get("multipart"))
+		h := make(textproto.MIMEHeader)
+
+		if ref != "" {
+			if contentID, err := getContentID(val, ref, class); err != nil {
+				return "", err
+			} else if contentID != "" {
+				h.Set("Content-ID", contentID)
+			} else {
+				return "", fmt.Errorf("ContentID of multipart binaryData in JsonData is empty")
+			}
+		}
+		h.Set("Content-Type", contentType)
+		fieldData, err := w.CreatePart(h)
+		if err != nil {
+			return "", err
+		}
+		fieldBody, err := setBody(val.Field(i).Interface(), contentType)
+		if err != nil {
+			return "", err
+		}
+		_, err = fieldData.Write(fieldBody.Bytes())
+		if err != nil {
+			return "", err
+		}
+	}
+	err := w.Close()
+	if err != nil {
+		return "", err
+	}
+	contentType := "multipart/related; boundary=\"" + w.Boundary() + "\""
+
+	return contentType, nil
+}
+
+func MultipartDecode(b []byte, v interface{}, boundary string) (err error) {
+	body := bytes.NewReader(b)
+	r := multipart.NewReader(body, boundary)
+	val := reflect.Indirect(reflect.ValueOf(v))
+
+	contentIDIndex := make(map[string]int)
+
+	for {
+		multipartBody := make([]byte, 1000)
+		part, err1 := r.NextPart()
+		if err1 == io.EOF {
+			break
+		}
+
+		contentType := part.Header.Get("Content-Type")
+		var n int
+		n, err = part.Read(multipartBody)
+		if err == nil {
+			return
+		}
+		multipartBody = multipartBody[:n]
+
+		if jsonCheck.MatchString(contentType) {
+			value := val.Field(0)
+			if value.Kind() == reflect.Ptr {
+				ptr := reflect.New(value.Type().Elem())
+				value.Set(ptr)
+			}
+			if err = json.Unmarshal(multipartBody, value.Interface()); err != nil {
+				return err
+			}
+			structType := val.Type()
+			for i := 1; i < structType.NumField(); i++ {
+				_, ref, class := parseMultipartFieldParameters(structType.Field(i).Tag.Get("multipart"))
+				if ref != "" {
+					if contentID, err := getContentID(val, ref, class); err != nil {
+						return err
+					} else if contentID != "" {
+						contentIDIndex[contentID] = i
+					}
+				}
+			}
+		} else {
+			contentID := part.Header.Get("Content-ID")
+			if index, ok := contentIDIndex[contentID]; ok {
+				value := val.Field(index)
+				value.SetBytes(multipartBody)
+			} else {
+				return fmt.Errorf("multipart binary data need Content-ID")
+			}
+		}
+	}
+
+	return nil
+}
+
+// Add a file to the multipart request
+func AddFile(w *multipart.Writer, fieldName, path string) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	part, err := w.CreateFormFile(fieldName, filepath.Base(path))
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(part, file)
+
+	return err
+}
+
+// Prevent trying to import "fmt"
+func ReportError(format string, a ...interface{}) error {
+	return fmt.Errorf(format, a...)
+}
+
+// A wrapper for strict JSON decoding
+func NewStrictDecoder(data []byte) *json.Decoder {
+	dec := json.NewDecoder(bytes.NewBuffer(data))
+	dec.DisallowUnknownFields()
+	return dec
+}
+
+// Set request body from an interface{}
+func SetBody(body interface{}, contentType string) (bodyBuf *bytes.Buffer, err error) {
+	if bodyBuf == nil {
+		bodyBuf = &bytes.Buffer{}
+	}
+
+	if reader, ok := body.(io.Reader); ok {
+		_, err = bodyBuf.ReadFrom(reader)
+	} else if fp, ok := body.(**os.File); ok {
+		_, err = bodyBuf.ReadFrom(*fp)
+	} else if b, ok := body.([]byte); ok {
+		_, err = bodyBuf.Write(b)
+	} else if b, ok := body.(*[]byte); ok {
+		if b != nil {
+			_, err = bodyBuf.Write(*b)
+		} else {
+			err = fmt.Errorf("body is NIL")
+		}
+	} else if s, ok := body.(string); ok {
+		_, err = bodyBuf.WriteString(s)
+	} else if s, ok := body.(*string); ok {
+		_, err = bodyBuf.WriteString(*s)
+	} else if jsonCheck.MatchString(contentType) {
+		err = json.NewEncoder(bodyBuf).Encode(body)
+	} else if xmlCheck.MatchString(contentType) {
+		err = xml.NewEncoder(bodyBuf).Encode(body)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if bodyBuf.Len() == 0 {
+		err = fmt.Errorf("Invalid body type %s\n", contentType)
+		return nil, err
+	}
+	return bodyBuf, nil
+}
+
+// detectContentType method is used to figure out `Request.Body` content type for request header
+func DetectContentType(body interface{}) string {
+	contentType := "text/plain; charset=utf-8"
+	kind := reflect.TypeOf(body).Kind()
+
+	switch kind {
+	case reflect.Struct, reflect.Map, reflect.Ptr:
+		contentType = "application/json; charset=utf-8"
+	case reflect.String:
+		contentType = "text/plain; charset=utf-8"
+	default:
+		if b, ok := body.([]byte); ok {
+			contentType = http.DetectContentType(b)
+		} else if kind == reflect.Slice {
+			contentType = "application/json; charset=utf-8"
+		}
+	}
+
+	return contentType
+}
+
+// Ripped from https://github.com/gregjones/httpcache/blob/master/httpcache.go
+type cacheControl map[string]string
+
+func parseCacheControl(headers http.Header) cacheControl {
+	cc := cacheControl{}
+	ccHeader := headers.Get("Cache-Control")
+	for _, part := range strings.Split(ccHeader, ",") {
+		part = strings.Trim(part, " ")
+		if part == "" {
+			continue
+		}
+		if strings.ContainsRune(part, '=') {
+			keyval := strings.Split(part, "=")
+			cc[strings.Trim(keyval[0], " ")] = strings.Trim(keyval[1], ",")
+		} else {
+			cc[part] = ""
+		}
+	}
+	return cc
+}
+
+// CacheExpires helper function to determine remaining time before repeating a request.
+func CacheExpires(r *http.Response) time.Time {
+	// Figure out when the cache expires.
+	var expires time.Time
+	now, err := time.Parse(time.RFC1123, r.Header.Get("date"))
+	if err != nil {
+		return time.Now()
+	}
+	respCacheControl := parseCacheControl(r.Header)
+
+	if maxAge, ok := respCacheControl["max-age"]; ok {
+		lifetime, err := time.ParseDuration(maxAge + "s")
+		if err != nil {
+			expires = now
+		} else {
+			expires = now.Add(lifetime)
+		}
+	} else {
+		expiresHeader := r.Header.Get("Expires")
+		if expiresHeader != "" {
+			expires, err = time.Parse(time.RFC1123, expiresHeader)
+			if err != nil {
+				expires = now
+			}
+		}
+	}
+	return expires
+}
+
+func strlen(s string) int {
+	return utf8.RuneCountInString(s)
+}

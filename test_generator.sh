@@ -34,3 +34,7 @@ java -Dlog.level=debug \
     -g go \
     --additional-properties=isGoSubmodule=true,enumClassPrefix=true,generateInterfaces=true \
     -o ${OUT_DIR} >${OUT_DIR}/oag.log 2>&1
+
+# anyOf 의 New 함수에서 string 에 대해 변환 오류가 있어서, 후처리 작업 진행
+sed -i 's/if varstring, err := NewstringFromValue(v); err == nil {/if true {/g' ${OUT_DIR}/model_*.go
+sed -i 's/this.string = varstring/this.string = \&v/g' ${OUT_DIR}/model_*.go
