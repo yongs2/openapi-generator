@@ -352,6 +352,9 @@ public abstract class AbstractGoCodegen extends DefaultCodegen implements Codege
             } else {
                 typDecl = "interface{}";
             }
+            if (inner != null && Boolean.TRUE.equals(inner.getNullable())) {
+                typDecl = "*" + typDecl;
+            }
             LOGGER.info(">> FIXME << getTypeDeclaration.01.ArraySchema.Name({}),Type[{}],inner.typDecl[{}],nullable[{}]", p.getName(), getSchemaType(p), typDecl, bNullable);
             return "[]" + typDecl;
         } else if (ModelUtils.isMapSchema(p)) {
