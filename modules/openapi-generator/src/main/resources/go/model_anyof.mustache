@@ -19,6 +19,9 @@ func New{{classname}}(v string) *{{classname}} {
 
 // Get function for cases including anyOf and string
 func (src *{{classname}}) Get() string {
+	if src == nil {	// fix null exception
+		return ""
+	}
 	{{#anyOf}}
 	if src.{{{.}}} != nil {
 		return string(*src.{{{.}}})
@@ -29,6 +32,9 @@ func (src *{{classname}}) Get() string {
 
 // IsSet function for cases including anyOf and string
 func (src *{{classname}}) IsSet() bool {
+	if src == nil {	// fix null exception
+		return false
+	}
 	{{#anyOf}}
 	if src.{{{.}}} != nil {
 		return true

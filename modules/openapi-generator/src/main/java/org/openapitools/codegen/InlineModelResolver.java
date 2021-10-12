@@ -79,8 +79,9 @@ public class InlineModelResolver {
             return;
         }
 
-        for (String pathname : paths.keySet()) {
-            PathItem path = paths.get(pathname);
+        for (Map.Entry<String, PathItem> pathsEntry : paths.entrySet()) {
+            String pathname = pathsEntry.getKey();
+            PathItem path = pathsEntry.getValue();
             List<Operation> operations = new ArrayList<>(path.readOperations());
 
             // Include callback operation as well
@@ -263,8 +264,9 @@ public class InlineModelResolver {
             return;
         }
 
-        for (String key : responses.keySet()) {
-            ApiResponse response = responses.get(key);
+        for (Map.Entry<String, ApiResponse> responsesEntry : responses.entrySet()) {
+            String key = responsesEntry.getKey();
+            ApiResponse response = responsesEntry.getValue();
             if (ModelUtils.getSchemaFromResponse(response) == null) {
                 continue;
             }
@@ -382,49 +384,30 @@ public class InlineModelResolver {
                 (component.get$ref() == null) &&
                 ((component.getProperties() != null && !component.getProperties().isEmpty()) || 
                  (component.getEnum() != null && !component.getEnum().isEmpty()))) {
-                LOGGER.info(">> FIXME << 02.flattenComposedChildren,key[{}],component.getDiscriminator=[{}]", key, component.getDiscriminator());
-                if (/*(config != null && config.isAllowInlineSchemas()) && */component.getDiscriminator() == null) {
-                    String schemaName = key.substring(0, key.length() - 6);
-                    Schema schema = openAPI.getComponents().getSchemas().get(schemaName);
-                    flattenProperties(openAPI, component.getProperties(), schemaName);
-                    schema.setType("object");
-                    LOGGER.info(">> FIXME << 03.flattenComposedChildren,key[{}],schemaName[{}]", key, schemaName);
-                    if (schema.getProperties() != null) {
-                        schema.getProperties().putAll(component.getProperties());
-                    } else {
-                        schema.setProperties(component.getProperties());
-                    }
-                    if (schema.getRequired() != null) {
-                        schema.getRequired().addAll(component.getRequired());
-                    } else {
-                        schema.setRequired(component.getRequired());
-                    }
+                // If a `title` attribute is defined in the inline schema, codegen uses it to name the
+                // inline schema. Otherwise, we'll use the default naming such as InlineObject1, etc.
+                // We know that this is not the best way to name the model.
+                //
+                // Such naming strategy may result in issues. If the value of the 'title' attribute
+                // happens to match a schema defined elsewhere in the specification, 'innerModelName'
+                // will be the same as that other schema.
+                //
+                // To have complete control of the model naming, one can define the model separately
+                // instead of inline.
+                String innerModelName = resolveModelName(component.getTitle(), key);
+                Schema innerModel = modelFromProperty(openAPI, component, innerModelName);
+                String existing = matchGenerated(innerModel);
+                LOGGER.info(">> FIXME << 03.flattenComposedChildren,key[{}],innerModelName[{}],innerModel[{}],existing[{}]", key, innerModelName, innerModel, existing);
+                if (existing == null) {
+                    openAPI.getComponents().addSchemas(innerModelName, innerModel);
+                    addGenerated(innerModelName, innerModel);
+                    Schema schema = new Schema().$ref(innerModelName);
+                    schema.setRequired(component.getRequired());
+                    listIterator.set(schema);
                 } else {
-                    // If a `title` attribute is defined in the inline schema, codegen uses it to name the
-                    // inline schema. Otherwise, we'll use the default naming such as InlineObject1, etc.
-                    // We know that this is not the best way to name the model.
-                    //
-                    // Such naming strategy may result in issues. If the value of the 'title' attribute
-                    // happens to match a schema defined elsewhere in the specification, 'innerModelName'
-                    // will be the same as that other schema.
-                    //
-                    // To have complete control of the model naming, one can define the model separately
-                    // instead of inline.
-                    String innerModelName = resolveModelName(component.getTitle(), key);
-                    Schema innerModel = modelFromProperty(openAPI, component, innerModelName);
-                    String existing = matchGenerated(innerModel);
-                    LOGGER.info(">> FIXME << 03.flattenComposedChildren,key[{}],innerModelName[{}],innerModel[{}],existing[{}]", key, innerModelName, innerModel, existing);
-                    if (existing == null) {
-                        openAPI.getComponents().addSchemas(innerModelName, innerModel);
-                        addGenerated(innerModelName, innerModel);
-                        Schema schema = new Schema().$ref(innerModelName);
-                        schema.setRequired(component.getRequired());
-                        listIterator.set(schema);
-                    } else {
-                        Schema schema = new Schema().$ref(existing);
-                        schema.setRequired(component.getRequired());
-                        listIterator.set(schema);
-                    }
+                    Schema schema = new Schema().$ref(existing);
+                    schema.setRequired(component.getRequired());
+                    listIterator.set(schema);
                 }
             }
         }
@@ -582,8 +565,9 @@ public class InlineModelResolver {
         }
         Map<String, Schema> propsToUpdate = new HashMap<String, Schema>();
         Map<String, Schema> modelsToAdd = new HashMap<String, Schema>();
-        for (String key : properties.keySet()) {
-            Schema property = properties.get(key);
+        for (Map.Entry<String, Schema> propertiesEntry : properties.entrySet()) {
+            String key = propertiesEntry.getKey();
+            Schema property = propertiesEntry.getValue();
             if (property instanceof ObjectSchema && ((ObjectSchema) property).getProperties() != null
                     && ((ObjectSchema) property).getProperties().size() > 0) {
                 ObjectSchema op = (ObjectSchema) property;
