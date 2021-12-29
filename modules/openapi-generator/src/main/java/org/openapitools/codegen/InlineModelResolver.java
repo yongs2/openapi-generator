@@ -382,7 +382,7 @@ public class InlineModelResolver {
             Schema component = listIterator.next();
             if ((component != null) &&
                 (component.get$ref() == null) &&
-                ((component.getProperties() != null && !component.getProperties().isEmpty()) || 
+                ((component.getProperties() != null && !component.getProperties().isEmpty()) ||
                  (component.getEnum() != null && !component.getEnum().isEmpty()))) {
                 // If a `title` attribute is defined in the inline schema, codegen uses it to name the
                 // inline schema. Otherwise, we'll use the default naming such as InlineObject1, etc.

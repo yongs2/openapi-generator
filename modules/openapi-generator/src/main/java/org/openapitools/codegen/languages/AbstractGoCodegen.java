@@ -348,7 +348,7 @@ public abstract class AbstractGoCodegen extends DefaultCodegen implements Codege
             boolean bNullable = false;
             if (inner != null) {
                 typDecl = getTypeDeclaration(inner);
-                bNullable = inner.getNullable(); // Refer to pull/10268
+                bNullable = (inner.getNullable() == null) ? false : inner.getNullable(); // Refer to pull/10268
             } else {
                 typDecl = "interface{}";
             }

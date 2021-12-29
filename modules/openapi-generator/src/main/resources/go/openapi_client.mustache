@@ -67,11 +67,20 @@ func GetHttpClient() *http.Client { return HttpClient }
 
 func GetHttp2Client() *http.Client { return Http2Client }
 
+type Configuration interface {
+	BasePath() string
+	Host() string
+	Scheme() string
+	UserAgent() string
+	DefaultHeader() map[string]string
+	HTTPClient() *http.Client
+}
+
 func atoi(in string) (int, error) {
 	return strconv.Atoi(in)
 }
 
-// selectHeaderContentType select a content type from the available list.
+// SelectHeaderContentType select a content type from the available list.
 func SelectHeaderContentType(contentTypes []string) string {
 	if len(contentTypes) == 0 {
 		return ""
@@ -82,7 +91,7 @@ func SelectHeaderContentType(contentTypes []string) string {
 	return contentTypes[0] // use the first content type specified in 'consumes'
 }
 
-// selectHeaderAccept join all accept types and return
+// SelectHeaderAccept join all accept types and return
 func SelectHeaderAccept(accepts []string) string {
 	if len(accepts) == 0 {
 		return ""
@@ -119,7 +128,7 @@ func TypeCheckParameter(obj interface{}, expected string, name string) error {
 	return nil
 }
 
-// parameterToString convert interface{} parameters to string, using a delimiter if format is provided.
+// ParameterToString convert interface{} parameters to string, using a delimiter if format is provided.
 func ParameterToString(obj interface{}, collectionFormat string) string {
 	var delimiter string
 
@@ -134,6 +143,10 @@ func ParameterToString(obj interface{}, collectionFormat string) string {
 		delimiter = ","
 	}
 
+	if reflect.TypeOf(obj).Kind() == reflect.Struct {
+		ret, _ := ParameterToJson(obj)
+		return ret
+	}
 	if reflect.TypeOf(obj).Kind() == reflect.Slice {
 		return strings.Trim(strings.Replace(fmt.Sprint(obj), " ", delimiter, -1), "[]")
 	} else if t, ok := obj.(time.Time); ok {
@@ -150,6 +163,11 @@ func ParameterToJson(obj interface{}) (string, error) {
 		return "", err
 	}
 	return string(jsonBuf), err
+}
+
+// callAPI do the request.
+func CallAPI(cfg Configuration, request *http.Request) (*http.Response, error) {
+	return cfg.HTTPClient().Do(request)
 }
 
 func parseMultipartFieldParameters(str string) (contentType string, ref string, class string) {
@@ -277,7 +295,7 @@ func MultipartEncode(v interface{}, body io.Writer) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		fieldBody, err := setBody(val.Field(i).Interface(), contentType)
+		fieldBody, err := SetBody(val.Field(i).Interface(), contentType)
 		if err != nil {
 			return "", err
 		}
@@ -293,6 +311,227 @@ func MultipartEncode(v interface{}, body io.Writer) (string, error) {
 	contentType := "multipart/related; boundary=\"" + w.Boundary() + "\""
 
 	return contentType, nil
+}
+
+// prepareRequest build the request
+func PrepareRequest(
+	ctx context.Context,
+	cfg Configuration,
+	path string, method string,
+	postBody interface{},
+	headerParams map[string]string,
+	queryParams url.Values,
+	formParams url.Values,
+	formFiles []formFile) (localVarRequest *http.Request, err error) {
+
+	var body *bytes.Buffer
+
+	// Detect postBody type and post.
+	if postBody != nil {
+		contentType := headerParams["Content-Type"]
+		if contentType == "" {
+			contentType = DetectContentType(postBody)
+			headerParams["Content-Type"] = contentType
+		}
+
+		if strings.HasPrefix(headerParams["Content-Type"], "multipart/related") {
+			body = &bytes.Buffer{}
+			contentType, err = MultipartEncode(postBody, body)
+			if err != nil {
+				return nil, err
+			}
+			headerParams["Content-Type"] = contentType
+
+		} else {
+			body, err = SetBody(postBody, contentType)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	// add form parameters and file if available.
+	if strings.HasPrefix(headerParams["Content-Type"], "multipart/form-data") && len(formParams) > 0 || (len(formFiles) > 0) {
+		if body != nil {
+			return nil, errors.New("Cannot specify postBody and multipart form at the same time.")
+		}
+		body = &bytes.Buffer{}
+		w := multipart.NewWriter(body)
+
+		for k, v := range formParams {
+			for _, iv := range v {
+				if strings.HasPrefix(k, "@") { // file
+					err = AddFile(w, k[1:], iv)
+					if err != nil {
+						return nil, err
+					}
+				} else { // form value
+					w.WriteField(k, iv)
+				}
+			}
+		}
+		for _, formFile := range formFiles {
+			if len(formFile.fileBytes) > 0 && formFile.fileName != "" {
+				w.Boundary()
+				part, err := w.CreateFormFile(formFile.formFileName, filepath.Base(formFile.fileName))
+				if err != nil {
+						return nil, err
+				}
+				_, err = part.Write(formFile.fileBytes)
+				if err != nil {
+						return nil, err
+				}
+			}
+		}
+
+		// Set the Boundary in the Content-Type
+		headerParams["Content-Type"] = w.FormDataContentType()
+
+		// Set Content-Length
+		headerParams["Content-Length"] = fmt.Sprintf("%d", body.Len())
+		w.Close()
+	}
+
+	if strings.HasPrefix(headerParams["Content-Type"], "application/x-www-form-urlencoded") && len(formParams) > 0 {
+		if body != nil {
+			return nil, errors.New("Cannot specify postBody and x-www-form-urlencoded form at the same time.")
+		}
+		body = &bytes.Buffer{}
+		body.WriteString(formParams.Encode())
+		// Set Content-Length
+		headerParams["Content-Length"] = fmt.Sprintf("%d", body.Len())
+	}
+
+	// Setup path and query parameters
+	url, err := url.Parse(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Override request host, if applicable
+	if cfg.Host() != "" {
+		url.Host = cfg.Host()
+	}
+
+	// Override request scheme, if applicable
+	if cfg.Scheme() != "" {
+		url.Scheme = cfg.Scheme()
+	}
+
+	// Adding Query Param
+	query := url.Query()
+	for k, v := range queryParams {
+		for _, iv := range v {
+			query.Add(k, iv)
+		}
+	}
+
+	// Encode the parameters.
+	url.RawQuery = query.Encode()
+
+	// Generate a new request
+	if body != nil {
+		localVarRequest, err = http.NewRequest(method, url.String(), body)
+	} else {
+		localVarRequest, err = http.NewRequest(method, url.String(), nil)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// add header parameters, if any
+	if len(headerParams) > 0 {
+		headers := http.Header{}
+		for h, v := range headerParams {
+			headers[h] = []string{v}
+		}
+		localVarRequest.Header = headers
+	}
+
+	// Add the user agent to the request.
+	localVarRequest.Header.Add("User-Agent", cfg.UserAgent())
+
+	if ctx != nil {
+		// add context to the request
+		localVarRequest = localVarRequest.WithContext(ctx)
+
+		// Walk through any authentication.
+
+		// OAuth2 authentication
+		if tok, ok := ctx.Value(ContextOAuth2).(oauth2.TokenSource); ok {
+			// We were able to grab an oauth2 token from the context
+			var latestToken *oauth2.Token
+			if latestToken, err = tok.Token(); err != nil {
+				return nil, err
+			}
+
+			latestToken.SetAuthHeader(localVarRequest)
+		}
+
+		// Basic HTTP Authentication
+		if auth, ok := ctx.Value(ContextBasicAuth).(BasicAuth); ok {
+			localVarRequest.SetBasicAuth(auth.UserName, auth.Password)
+		}
+
+		// AccessToken Authentication
+		if auth, ok := ctx.Value(ContextAccessToken).(string); ok {
+			localVarRequest.Header.Add("Authorization", "Bearer "+auth)
+		}
+		{{#withAWSV4Signature}}
+
+		// AWS Signature v4 Authentication
+		if auth, ok := ctx.Value(ContextAWSv4).(AWSv4); ok {
+			creds := awscredentials.NewStaticCredentials(auth.AccessKey, auth.SecretKey, auth.SessionToken)
+			signer := awsv4.NewSigner(creds)
+			var reader *strings.Reader
+			if body == nil {
+				reader = strings.NewReader("")
+			} else {
+				reader = strings.NewReader(body.String())
+			}
+
+			// Define default values for region and service to maintain backward compatibility
+			region := auth.Region
+			if region == "" {
+				region = "eu-west-2"
+			}
+			service := auth.Service
+			if service == "" {
+				service = "oapi"
+			}
+
+			timestamp := time.Now()
+			_, err := signer.Sign(localVarRequest, reader, service, region, timestamp)
+			if err != nil {
+				return nil, err
+			}
+		}
+		{{/withAWSV4Signature}}
+	}
+
+	for header, value := range cfg.DefaultHeader() {
+		localVarRequest.Header.Add(header, value)
+	}
+{{#withCustomMiddlewareFunction}}
+
+	if cfg.Middleware != nil {
+		cfg.Middleware(localVarRequest)
+	}
+{{/withCustomMiddlewareFunction}}
+{{#hasHttpSignatureMethods}}
+
+	if ctx != nil {
+		// HTTP Signature Authentication. All request headers must be set (including default headers)
+		// because the headers may be included in the signature.
+		if auth, ok := ctx.Value(ContextHttpSignatureAuth).(HttpSignatureAuth); ok {
+			err = SignRequest(ctx, localVarRequest, auth)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+{{/hasHttpSignatureMethods}}
+	return localVarRequest, nil
 }
 
 func MultipartDecode(b []byte, v interface{}, boundary string) (err error) {
@@ -317,7 +556,7 @@ func MultipartDecode(b []byte, v interface{}, boundary string) (err error) {
 		}
 		multipartBody = multipartBody[:n]
 
-		if jsonCheck.MatchString(contentType) {
+		if JsonCheck.MatchString(contentType) {
 			value := val.Field(0)
 			if value.Kind() == reflect.Ptr {
 				ptr := reflect.New(value.Type().Elem())
@@ -351,7 +590,72 @@ func MultipartDecode(b []byte, v interface{}, boundary string) (err error) {
 	return nil
 }
 
-// Add a file to the multipart request
+func Decode(v interface{}, b []byte, contentType string) (err error) {
+	if len(b) == 0 {
+		return nil
+	}
+
+	if strings.EqualFold("application/diameter", contentType) {
+		if d, ok := v.(*[]byte); ok {
+			*d = b
+		}
+		return nil
+	}
+
+	if s, ok := v.(*string); ok {
+		*s = string(b)
+		return nil
+	}
+	if f, ok := v.(**os.File); ok {
+		*f, err = ioutil.TempFile("", "HttpClientFile")
+		if err != nil {
+			return
+		}
+		_, err = (*f).Write(b)
+		_, err = (*f).Seek(0, io.SeekStart)
+		return
+	}
+	if XmlCheck.MatchString(contentType) {
+		if err = xml.Unmarshal(b, v); err != nil {
+			return err
+		}
+		return nil
+	}
+	if JsonCheck.MatchString(contentType) {
+		if actualObj, ok := v.(interface{ GetActualInstance() interface{} }); ok { // oneOf, anyOf schemas
+			if unmarshalObj, ok := actualObj.(interface{ UnmarshalJSON([]byte) error }); ok { // make sure it has UnmarshalJSON defined
+				if err = unmarshalObj.UnmarshalJSON(b); err != nil {
+					return err
+				}
+			} else {
+				return errors.New("Unknown type with GetActualInstance but no unmarshalObj.UnmarshalJSON defined")
+			}
+		} else if err = json.Unmarshal(b, v); err != nil { // simple model
+			return err
+		}
+		return nil
+	}
+	if MultipartRelatedCheck.MatchString(contentType) {
+		boundary := ""
+		for _, part := range strings.Split(contentType, ";") {
+			part = strings.Trim(part, " \t")
+			if strings.HasPrefix(part, "boundary=") {
+				boundary = part[9:]
+			}
+		}
+		if boundary == "" {
+			return errors.New("multipart/related need boundary")
+		}
+		boundary = strings.Trim(boundary, "\" ")
+		if err = MultipartDecode(b, v, boundary); err != nil {
+			return err
+		}
+		return nil
+	}
+	return errors.New("undefined response type")
+}
+
+// add a file to the multipart request
 func AddFile(w *multipart.Writer, fieldName, path string) error {
 	file, err := os.Open(path)
 	if err != nil {
@@ -380,7 +684,7 @@ func NewStrictDecoder(data []byte) *json.Decoder {
 	return dec
 }
 
-// Set request body from an interface{}
+// set request body from an interface{}
 func SetBody(body interface{}, contentType string) (bodyBuf *bytes.Buffer, err error) {
 	if bodyBuf == nil {
 		bodyBuf = &bytes.Buffer{}
@@ -402,9 +706,9 @@ func SetBody(body interface{}, contentType string) (bodyBuf *bytes.Buffer, err e
 		_, err = bodyBuf.WriteString(s)
 	} else if s, ok := body.(*string); ok {
 		_, err = bodyBuf.WriteString(*s)
-	} else if jsonCheck.MatchString(contentType) {
+	} else if JsonCheck.MatchString(contentType) {
 		err = json.NewEncoder(bodyBuf).Encode(body)
-	} else if xmlCheck.MatchString(contentType) {
+	} else if XmlCheck.MatchString(contentType) {
 		err = xml.NewEncoder(bodyBuf).Encode(body)
 	}
 
@@ -419,7 +723,7 @@ func SetBody(body interface{}, contentType string) (bodyBuf *bytes.Buffer, err e
 	return bodyBuf, nil
 }
 
-// detectContentType method is used to figure out `Request.Body` content type for request header
+// DetectContentType method is used to figure out `Request.Body` content type for request header
 func DetectContentType(body interface{}) string {
 	contentType := "text/plain; charset=utf-8"
 	kind := reflect.TypeOf(body).Kind()

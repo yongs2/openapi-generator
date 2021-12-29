@@ -6745,12 +6745,25 @@ public class DefaultCodegen implements CodegenConfig {
                             headers.add(param);
                         }
                     }
+                    LOGGER.info(">> FIXME << getContent.Encoding.ContentType({}),Style[{}],Explode[{}],AllowReserved[{}]", enc.getContentType(), enc.getStyle(), enc.getExplode(), enc.getAllowReserved());
+                    String sStyle = "";
+                    if (enc.getStyle() != null) {
+                        sStyle = enc.getStyle().toString();
+                    }
+                    boolean bExplode = false;
+                    if (enc.getExplode() != null) {
+                        bExplode = enc.getExplode().booleanValue();
+                    }
+                    boolean bAllowReserved = false;
+                    if (enc.getAllowReserved() != null) {
+                        bAllowReserved = enc.getAllowReserved().booleanValue();
+                    }
                     CodegenEncoding ce = new CodegenEncoding(
                             enc.getContentType(),
                             headers,
-                            enc.getStyle().toString(),
-                            enc.getExplode().booleanValue(),
-                            enc.getAllowReserved().booleanValue()
+                            sStyle,
+                            bExplode,
+                            bAllowReserved
                     );
                     String propName = encodingEntry.getKey();
                     ceMap.put(propName, ce);
