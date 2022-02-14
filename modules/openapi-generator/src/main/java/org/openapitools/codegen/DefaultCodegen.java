@@ -1599,8 +1599,6 @@ public class DefaultCodegen implements CodegenConfig {
         typeMapping.put("array", "List");
         typeMapping.put("set", "Set");
         typeMapping.put("map", "Map");
-        typeMapping.put("List", "List");
-        typeMapping.put("Set", "Set");
         typeMapping.put("boolean", "Boolean");
         typeMapping.put("string", "String");
         typeMapping.put("int", "Integer");
@@ -2758,7 +2756,6 @@ public class DefaultCodegen implements CodegenConfig {
             addParentContainer(m, name, schema);
         } else if (ModelUtils.isIntegerSchema(schema)) { // integer type
             // NOTE: Integral schemas as CodegenModel is a rare use case and may be removed at a later date.
-
             m.isNumeric = Boolean.TRUE;
             if (ModelUtils.isLongSchema(schema)) { // int64/long format
                 m.isLong = Boolean.TRUE;
@@ -2850,6 +2847,7 @@ public class DefaultCodegen implements CodegenConfig {
                 postProcessModelProperty(m, prop);
             }
         }
+
         return m;
     }
 
@@ -2897,16 +2895,15 @@ public class DefaultCodegen implements CodegenConfig {
         }
     }
 
-
-        /**
-         * Recursively look in Schema sc for the discriminator discPropName
-         * and return a CodegenProperty with the dataType and required params set
-         * the returned CodegenProperty may not be required and it may not be of type string
-         *
-         * @param composedSchemaName The name of the sc Schema
-         * @param sc                 The Schema that may contain the discriminator
-         * @param discPropName       The String that is the discriminator propertyName in the schema
-         */
+    /**
+     * Recursively look in Schema sc for the discriminator discPropName
+     * and return a CodegenProperty with the dataType and required params set
+     * the returned CodegenProperty may not be required and it may not be of type string
+     *
+     * @param composedSchemaName The name of the sc Schema
+     * @param sc                 The Schema that may contain the discriminator
+     * @param discPropName       The String that is the discriminator propertyName in the schema
+     */
     private CodegenProperty discriminatorFound(String composedSchemaName, Schema sc, String discPropName, OpenAPI openAPI) {
         Schema refSchema = ModelUtils.getReferencedSchema(openAPI, sc);
         if (refSchema.getProperties() != null && refSchema.getProperties().get(discPropName) != null) {
@@ -4133,7 +4130,7 @@ public class DefaultCodegen implements CodegenConfig {
                 }
 
                 // add example
-                if (schemas != null) {
+                if (schemas != null && !isSkipOperationExample()) {
                     op.requestBodyExamples = new ExampleGenerator(schemas, this.openAPI).generate(null, new ArrayList<>(getConsumesInfo(this.openAPI, operation)), bodyParam.baseType);
                 }
             }
@@ -4882,10 +4879,13 @@ public class DefaultCodegen implements CodegenConfig {
                     // This scheme may have to be changed when it is officially registered with IANA.
                     cs.isHttpSignature = true;
                     once(LOGGER).warn("Security scheme 'HTTP signature' is a draft IETF RFC and subject to change.");
+                } else {
+                    once(LOGGER).warn("Unknown scheme `{}` found in the HTTP security definition.", securityScheme.getScheme());
                 }
                 codegenSecurities.add(cs);
             } else if (SecurityScheme.Type.OAUTH2.equals(securityScheme.getType())) {
                 final OAuthFlows flows = securityScheme.getFlows();
+                boolean isFlowEmpty = true;
                 if (securityScheme.getFlows() == null) {
                     throw new RuntimeException("missing oauth flow in " + key);
                 }
@@ -4895,6 +4895,7 @@ public class DefaultCodegen implements CodegenConfig {
                     cs.isPassword = true;
                     cs.flow = "password";
                     codegenSecurities.add(cs);
+                    isFlowEmpty = false;
                 }
                 if (flows.getImplicit() != null) {
                     final CodegenSecurity cs = defaultOauthCodegenSecurity(key, securityScheme);
@@ -4902,6 +4903,7 @@ public class DefaultCodegen implements CodegenConfig {
                     cs.isImplicit = true;
                     cs.flow = "implicit";
                     codegenSecurities.add(cs);
+                    isFlowEmpty = false;
                 }
                 if (flows.getClientCredentials() != null) {
                     final CodegenSecurity cs = defaultOauthCodegenSecurity(key, securityScheme);
@@ -4909,6 +4911,7 @@ public class DefaultCodegen implements CodegenConfig {
                     cs.isApplication = true;
                     cs.flow = "application";
                     codegenSecurities.add(cs);
+                    isFlowEmpty = false;
                 }
                 if (flows.getAuthorizationCode() != null) {
                     final CodegenSecurity cs = defaultOauthCodegenSecurity(key, securityScheme);
@@ -4916,7 +4919,14 @@ public class DefaultCodegen implements CodegenConfig {
                     cs.isCode = true;
                     cs.flow = "accessCode";
                     codegenSecurities.add(cs);
+                    isFlowEmpty = false;
                 }
+
+                if (isFlowEmpty) {
+                    once(LOGGER).error("Invalid flow definition defined in the security scheme: {}", flows);
+                }
+            } else {
+                once(LOGGER).error("Unknown type `{}` found in the security definition `{}`.", securityScheme.getType(), securityScheme.getName());
             }
         }
 
@@ -5151,10 +5161,30 @@ public class DefaultCodegen implements CodegenConfig {
         }
     }
 
+    protected void addImports(CodegenModel m, IJsonSchemaValidationProperties type) {
+        addImports(m.imports, type);
+    }
+
+    protected void addImports(Set<String> importsToBeAddedTo, IJsonSchemaValidationProperties type) {
+        addImports(importsToBeAddedTo, type.getImports(true));
+    }
+
+    protected void addImports(Set<String> importsToBeAddedTo, Set<String> importsToAdd) {
+        importsToAdd.stream().forEach(i -> addImport(importsToBeAddedTo, i));
+    }
+
     protected void addImport(CodegenModel m, String type) {
-        if (type != null && needToImport(type)) {
-            m.imports.add(type);
+        addImport(m.imports, type);
+    }
+
+    private void addImport(Set<String> importsToBeAddedTo, String type) {
+        if (shouldAddImport(type)) {
+            importsToBeAddedTo.add(type);
         }
+    }
+
+    private boolean shouldAddImport(String type) {
+        return type != null && needToImport(type);
     }
 
     /**
@@ -5229,7 +5259,7 @@ public class DefaultCodegen implements CodegenConfig {
      * @param properties a map of properties (schema)
      * @param mandatory  a set of required properties' name
      */
-    private void addVars(IJsonSchemaValidationProperties m, List<CodegenProperty> vars, Map<String, Schema> properties, Set<String> mandatory) {
+    protected void addVars(IJsonSchemaValidationProperties m, List<CodegenProperty> vars, Map<String, Schema> properties, Set<String> mandatory) {
         if (properties == null) {
             return;
         }
@@ -5293,17 +5323,10 @@ public class DefaultCodegen implements CodegenConfig {
      * @param property The codegen representation of the OAS schema's property.
      */
     protected void addImportsForPropertyType(CodegenModel model, CodegenProperty property) {
-        // TODO revise the logic to include map
         if (property.isContainer) {
-            addImport(model, typeMapping.get("array"));
+            addImport(model.imports, typeMapping.get("array"));
         }
-
-        addImport(model, property.baseType);
-        CodegenProperty innerCp = property;
-        while (innerCp != null) {
-            addImport(model, innerCp.complexType);
-            innerCp = innerCp.items;
-        }
+        addImports(model, property);
     }
 
     /**
@@ -6294,7 +6317,7 @@ public class DefaultCodegen implements CodegenConfig {
 
         codegenParameter.baseType = codegenProperty.baseType;
         codegenParameter.dataType = codegenProperty.dataType;
-        codegenParameter.defaultValue = codegenProperty.getDefaultValue();
+        codegenParameter.defaultValue = toDefaultParameterValue(propertySchema);
         codegenParameter.baseName = codegenProperty.baseName;
         codegenParameter.paramName = toParamName(codegenParameter.baseName);
         codegenParameter.dataFormat = codegenProperty.dataFormat;
@@ -6773,6 +6796,9 @@ public class DefaultCodegen implements CodegenConfig {
             CodegenProperty schemaProp = fromProperty(toMediaTypeSchemaName(contentType, mediaTypeSchemaSuffix), mt.getSchema());
             CodegenMediaType codegenMt = new CodegenMediaType(schemaProp, ceMap);
             cmtContent.put(contentType, codegenMt);
+            if (schemaProp != null) {
+                addImports(imports, schemaProp.getImports(false));
+            }
         }
         return cmtContent;
     }
@@ -6871,7 +6897,7 @@ public class DefaultCodegen implements CodegenConfig {
         return codegenParameter;
     }
 
-    private void addVarsRequiredVarsAdditionalProps(Schema schema, IJsonSchemaValidationProperties property){
+    protected void addVarsRequiredVarsAdditionalProps(Schema schema, IJsonSchemaValidationProperties property){
         setAddProps(schema, property);
         if (!"object".equals(schema.getType())) {
             return;
@@ -7402,4 +7428,15 @@ public class DefaultCodegen implements CodegenConfig {
         }
         return xOf;
     }
+
+    @Override
+    public String defaultTemplatingEngine() {
+        return "mustache";
+    }
+
+    @Override
+    public GeneratorLanguage generatorLanguage() { return GeneratorLanguage.JAVA; }
+
+    @Override
+    public String generatorLanguageVersion() { return null; };
 }

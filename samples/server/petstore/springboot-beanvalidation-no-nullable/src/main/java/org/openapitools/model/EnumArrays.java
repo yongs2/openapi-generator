@@ -14,12 +14,15 @@ import javax.validation.constraints.*;
 
 
 import java.util.*;
+import javax.annotation.Generated;
 
 /**
  * EnumArrays
  */
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
+
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 public class EnumArrays   {
+
   /**
    * Gets or Sets justSymbol
    */
@@ -106,9 +109,8 @@ public class EnumArrays   {
    * Get justSymbol
    * @return justSymbol
   */
+  
   @ApiModelProperty(value = "")
-
-
   public JustSymbolEnum getJustSymbol() {
     return justSymbol;
   }
@@ -124,7 +126,7 @@ public class EnumArrays   {
 
   public EnumArrays addArrayEnumItem(ArrayEnumEnum arrayEnumItem) {
     if (this.arrayEnum == null) {
-      this.arrayEnum = new ArrayList<ArrayEnumEnum>();
+      this.arrayEnum = new ArrayList<>();
     }
     this.arrayEnum.add(arrayEnumItem);
     return this;
@@ -134,9 +136,8 @@ public class EnumArrays   {
    * Get arrayEnum
    * @return arrayEnum
   */
+  
   @ApiModelProperty(value = "")
-
-
   public List<ArrayEnumEnum> getArrayEnum() {
     return arrayEnum;
   }
@@ -144,7 +145,6 @@ public class EnumArrays   {
   public void setArrayEnum(List<ArrayEnumEnum> arrayEnum) {
     this.arrayEnum = arrayEnum;
   }
-
 
   @Override
   public boolean equals(Object o) {
@@ -168,7 +168,6 @@ public class EnumArrays   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class EnumArrays {\n");
-    
     sb.append("    justSymbol: ").append(toIndentedString(justSymbol)).append("\n");
     sb.append("    arrayEnum: ").append(toIndentedString(arrayEnum)).append("\n");
     sb.append("}");

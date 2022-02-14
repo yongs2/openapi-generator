@@ -34,7 +34,7 @@ type {{classname}} interface {
 	{{#isDeprecated}}
 	 * Deprecated
 	{{/isDeprecated}}
-	 */
+	*/
 	{{{nickname}}}(ctx context.Context{{#pathParams}}, {{paramName}} {{{dataType}}}{{/pathParams}}) {{#structPrefix}}{{&classname}}{{/structPrefix}}Api{{operationId}}Request
 
 	/*
