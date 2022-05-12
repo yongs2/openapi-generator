@@ -424,7 +424,7 @@ public class GoClientCodegen extends AbstractGoCodegen {
 
             for (CodegenProperty param : Iterables.concat(model.vars, model.allVars, model.requiredVars, model.optionalVars)) {
                 param.vendorExtensions.put("x-go-base-type", param.dataType);
-                if (!param.isNullable || param.isContainer || param.isFreeFormObject
+                if (!param.isNullable || param.isFreeFormObject
                     || (param.isAnyType && !param.isModel)) {
                     continue;
                 }

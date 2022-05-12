@@ -80,13 +80,13 @@ func (r {{#structPrefix}}{{&classname}}{{/structPrefix}}{{^structPrefix}}Api{{/s
 }
 
 /*
- * {{operationId}} {{{summary}}}{{^summary}} Method for {{operationId}}{{/summary}}
+ * {{operationId}} {{{summary}}}{{^summary}}Method for {{operationId}}{{/summary}}
 {{#notes}}
  * {{{unescapedNotes}}}
 {{/notes}}
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().{{#pathParams}}
  * @param {{paramName}}{{#description}} {{{.}}}{{/description}}{{/pathParams}}
- * @return {{#structPrefix}}{{&classname}}{{/structPrefix}}Api{{operationId}}Request
+ * @return {{#structPrefix}}{{&classname}}{{/structPrefix}}{{^structPrefix}}Api{{/structPrefix}}{{operationId}}Request
 {{#isDeprecated}}
 Deprecated
 {{/isDeprecated}}
