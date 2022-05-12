@@ -32,7 +32,7 @@ import javax.annotation.Generated;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 @Validated
-@Tag(name = "Store", description = "the Store API")
+@Tag(name = "Store", description = "Access to Petstore orders")
 public interface StoreApi {
 
     /**
@@ -124,6 +124,7 @@ public interface StoreApi {
 
     /**
      * POST /store/order : Place an order for a pet
+     * 
      *
      * @param order order placed for purchasing the pet (required)
      * @return successful operation (status code 200)

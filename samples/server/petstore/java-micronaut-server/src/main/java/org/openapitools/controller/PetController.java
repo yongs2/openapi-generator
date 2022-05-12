@@ -29,10 +29,11 @@ import javax.validation.constraints.*;
 import io.swagger.annotations.*;
 
 @Generated(value="org.openapitools.codegen.languages.JavaMicronautServerCodegen")
-@Controller("${context-path}")
+@Controller
 public class PetController {
     /**
      * Add a new pet to the store
+     * 
      *
      * @param pet Pet object that needs to be added to the store (required)
      * @return Pet
@@ -40,6 +41,7 @@ public class PetController {
     @ApiOperation(
         value = "Add a new pet to the store",
         nickname = "addPet",
+        notes = "",
         response = Pet.class,
         authorizations = {
             @Authorization(value = "petstore_auth", scopes = {
@@ -57,13 +59,13 @@ public class PetController {
     public Mono<Pet> addPet(
         @Body @NotNull @Valid Pet pet
     ) {
-        // TODO implement addPet() body;
-        Mono<Pet> result = Mono.empty();
-        return result;
+        // TODO implement addPet();
+        return Mono.empty();
     }
 
     /**
      * Deletes a pet
+     * 
      *
      * @param petId Pet id to delete (required)
      * @param apiKey  (optional)
@@ -71,6 +73,7 @@ public class PetController {
     @ApiOperation(
         value = "Deletes a pet",
         nickname = "deletePet",
+        notes = "",
         authorizations = {
             @Authorization(value = "petstore_auth", scopes = {
                 @AuthorizationScope(scope = "write:pets", description = "modify pets in your account"),
@@ -82,13 +85,12 @@ public class PetController {
         @ApiResponse(code = 400, message = "Invalid pet value")})
     @Delete(uri="/pet/{petId}")
     @Produces(value = {})
-    public Mono<Object> deletePet(
+    public Mono<Void> deletePet(
         @PathVariable(value="petId") @NotNull Long petId, 
         @Header(value="api_key") @Nullable String apiKey
     ) {
-        // TODO implement deletePet() body;
-        Mono<Object> result = Mono.empty();
-        return result;
+        // TODO implement deletePet();
+        return Mono.empty();
     }
 
     /**
@@ -118,9 +120,8 @@ public class PetController {
     public Mono<List<Pet>> findPetsByStatus(
         @QueryValue(value="status") @NotNull List<String> status
     ) {
-        // TODO implement findPetsByStatus() body;
-        Mono<List<Pet>> result = Mono.empty();
-        return result;
+        // TODO implement findPetsByStatus();
+        return Mono.empty();
     }
 
     /**
@@ -150,9 +151,8 @@ public class PetController {
     public Mono<List<Pet>> findPetsByTags(
         @QueryValue(value="tags") @NotNull List<String> tags
     ) {
-        // TODO implement findPetsByTags() body;
-        Mono<List<Pet>> result = Mono.empty();
-        return result;
+        // TODO implement findPetsByTags();
+        return Mono.empty();
     }
 
     /**
@@ -180,13 +180,13 @@ public class PetController {
     public Mono<Pet> getPetById(
         @PathVariable(value="petId") @NotNull Long petId
     ) {
-        // TODO implement getPetById() body;
-        Mono<Pet> result = Mono.empty();
-        return result;
+        // TODO implement getPetById();
+        return Mono.empty();
     }
 
     /**
      * Update an existing pet
+     * 
      *
      * @param pet Pet object that needs to be added to the store (required)
      * @return Pet
@@ -194,6 +194,7 @@ public class PetController {
     @ApiOperation(
         value = "Update an existing pet",
         nickname = "updatePet",
+        notes = "",
         response = Pet.class,
         authorizations = {
             @Authorization(value = "petstore_auth", scopes = {
@@ -213,13 +214,13 @@ public class PetController {
     public Mono<Pet> updatePet(
         @Body @NotNull @Valid Pet pet
     ) {
-        // TODO implement updatePet() body;
-        Mono<Pet> result = Mono.empty();
-        return result;
+        // TODO implement updatePet();
+        return Mono.empty();
     }
 
     /**
      * Updates a pet in the store with form data
+     * 
      *
      * @param petId ID of pet that needs to be updated (required)
      * @param name Updated name of the pet (optional)
@@ -228,6 +229,7 @@ public class PetController {
     @ApiOperation(
         value = "Updates a pet in the store with form data",
         nickname = "updatePetWithForm",
+        notes = "",
         authorizations = {
             @Authorization(value = "petstore_auth", scopes = {
                 @AuthorizationScope(scope = "write:pets", description = "modify pets in your account"),
@@ -240,18 +242,18 @@ public class PetController {
     @Post(uri="/pet/{petId}")
     @Produces(value = {})
     @Consumes(value = {"application/x-www-form-urlencoded"})
-    public Mono<Object> updatePetWithForm(
+    public Mono<Void> updatePetWithForm(
         @PathVariable(value="petId") @NotNull Long petId, 
         @Nullable String name, 
         @Nullable String status
     ) {
-        // TODO implement updatePetWithForm() body;
-        Mono<Object> result = Mono.empty();
-        return result;
+        // TODO implement updatePetWithForm();
+        return Mono.empty();
     }
 
     /**
      * uploads an image
+     * 
      *
      * @param petId ID of pet to update (required)
      * @param additionalMetadata Additional data to pass to server (optional)
@@ -261,6 +263,7 @@ public class PetController {
     @ApiOperation(
         value = "uploads an image",
         nickname = "uploadFile",
+        notes = "",
         response = ModelApiResponse.class,
         authorizations = {
             @Authorization(value = "petstore_auth", scopes = {
@@ -279,8 +282,7 @@ public class PetController {
         @Nullable String additionalMetadata, 
         @Nullable CompletedFileUpload _file
     ) {
-        // TODO implement uploadFile() body;
-        Mono<ModelApiResponse> result = Mono.empty();
-        return result;
+        // TODO implement uploadFile();
+        return Mono.empty();
     }
 }

@@ -41,6 +41,7 @@ import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -83,6 +84,7 @@ public class Cat extends Animal implements Parcelable {
   public void setDeclawed(Boolean declawed) {
     this.declawed = declawed;
   }
+
 
 
   @Override
@@ -173,7 +175,7 @@ public class Cat extends Animal implements Parcelable {
       if (jsonObj == null) {
         if (Cat.openapiRequiredFields.isEmpty()) {
           return;
-        } else { // has reuqired fields
+        } else { // has required fields
           throw new IllegalArgumentException(String.format("The required field(s) %s in Cat is not found in the empty JSON string", Cat.openapiRequiredFields.toString()));
         }
       }

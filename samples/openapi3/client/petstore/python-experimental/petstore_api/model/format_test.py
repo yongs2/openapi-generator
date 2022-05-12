@@ -12,6 +12,7 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 import typing  # noqa: F401
+import functools  # noqa: F401
 
 from frozendict import frozendict  # noqa: F401
 
@@ -31,6 +32,7 @@ from petstore_api.schemas import (  # noqa: F401
     Float32Schema,
     Float64Schema,
     NumberSchema,
+    UUIDSchema,
     DateSchema,
     DateTimeSchema,
     DecimalSchema,
@@ -38,7 +40,7 @@ from petstore_api.schemas import (  # noqa: F401
     BinarySchema,
     NoneSchema,
     none_type,
-    InstantiationMetadata,
+    Configuration,
     Unset,
     unset,
     ComposedBase,
@@ -52,6 +54,7 @@ from petstore_api.schemas import (  # noqa: F401
     Float32Base,
     Float64Base,
     NumberBase,
+    UUIDBase,
     DateBase,
     DateTimeBase,
     BoolBase,
@@ -162,8 +165,8 @@ class FormatTest(
     binary = BinarySchema
     date = DateSchema
     dateTime = DateTimeSchema
-    uuid = StrSchema
-    uuidNoExample = StrSchema
+    uuid = UUIDSchema
+    uuidNoExample = UUIDSchema
     
     
     class password(
@@ -225,7 +228,7 @@ class FormatTest(
         pattern_with_digits: typing.Union[pattern_with_digits, Unset] = unset,
         pattern_with_digits_and_delimiter: typing.Union[pattern_with_digits_and_delimiter, Unset] = unset,
         noneProp: typing.Union[noneProp, Unset] = unset,
-        _instantiation_metadata: typing.Optional[InstantiationMetadata] = None,
+        _configuration: typing.Optional[Configuration] = None,
         **kwargs: typing.Type[Schema],
     ) -> 'FormatTest':
         return super().__new__(
@@ -251,6 +254,6 @@ class FormatTest(
             pattern_with_digits=pattern_with_digits,
             pattern_with_digits_and_delimiter=pattern_with_digits_and_delimiter,
             noneProp=noneProp,
-            _instantiation_metadata=_instantiation_metadata,
+            _configuration=_configuration,
             **kwargs,
         )

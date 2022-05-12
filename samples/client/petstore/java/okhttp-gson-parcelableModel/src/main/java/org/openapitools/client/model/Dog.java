@@ -40,6 +40,7 @@ import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -82,6 +83,7 @@ public class Dog extends Animal implements Parcelable {
   public void setBreed(String breed) {
     this.breed = breed;
   }
+
 
 
   @Override
@@ -172,10 +174,11 @@ public class Dog extends Animal implements Parcelable {
       if (jsonObj == null) {
         if (Dog.openapiRequiredFields.isEmpty()) {
           return;
-        } else { // has reuqired fields
+        } else { // has required fields
           throw new IllegalArgumentException(String.format("The required field(s) %s in Dog is not found in the empty JSON string", Dog.openapiRequiredFields.toString()));
         }
       }
+
       Set<Entry<String, JsonElement>> entries = jsonObj.entrySet();
       // check to see if the JSON string contains additional fields
       for (Entry<String, JsonElement> entry : entries) {
