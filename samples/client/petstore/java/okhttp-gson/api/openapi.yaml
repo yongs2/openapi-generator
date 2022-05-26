@@ -48,7 +48,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_default'
+                $ref: '#/components/schemas/_foo_get_default_response'
           description: response
       x-accepts: application/json
   /pet:
@@ -2181,14 +2181,12 @@ components:
           type: string
         array_allof_dog_property:
           items:
-            allOf:
-            - $ref: '#/components/schemas/Dog_allOf'
-            - $ref: '#/components/schemas/ArrayOfInlineAllOf_array_allof_dog_property_inner_allOf'
+            $ref: '#/components/schemas/ArrayOfInlineAllOf_array_allof_dog_property_inner'
           type: array
       required:
       - name
       type: object
-    inline_response_default:
+    _foo_get_default_response:
       example:
         string:
           bar: bar
@@ -2348,6 +2346,10 @@ components:
         color:
           type: string
       type: object
+    ArrayOfInlineAllOf_array_allof_dog_property_inner:
+      allOf:
+      - $ref: '#/components/schemas/Dog_allOf'
+      - $ref: '#/components/schemas/ArrayOfInlineAllOf_array_allof_dog_property_inner_allOf'
   securitySchemes:
     petstore_auth:
       flows:
