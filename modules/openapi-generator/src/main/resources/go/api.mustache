@@ -13,7 +13,6 @@ import (
 {{#imports}}	"{{import}}"
 {{/imports}}
 )
-
 {{#generateInterfaces}}
 
 type {{classname}} interface {
@@ -90,7 +89,7 @@ func (r {{#structPrefix}}{{&classname}}{{/structPrefix}}{{^structPrefix}}Api{{/s
 {{#isDeprecated}}
 Deprecated
 {{/isDeprecated}}
-*/
+ */
 func (a *{{{classname}}}Service) {{{nickname}}}(ctx context.Context{{#pathParams}}, {{paramName}} {{{dataType}}}{{/pathParams}}) {{#structPrefix}}{{&classname}}{{/structPrefix}}{{^structPrefix}}Api{{/structPrefix}}{{operationId}}Request {
 	return {{#structPrefix}}{{&classname}}{{/structPrefix}}{{^structPrefix}}Api{{/structPrefix}}{{operationId}}Request{
 		ApiService: a,

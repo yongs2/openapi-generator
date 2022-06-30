@@ -374,6 +374,5 @@ func (o *{{{classname}}}) UnmarshalJSON(bytes []byte) (err error) {
 func (o *{{{classname}}}) UnmarshalJSON(bytes []byte) (err error) {
 	return json.Unmarshal(bytes, &o.Items)
 }
-
 {{/isArray}}
 {{>nullable_model}}
