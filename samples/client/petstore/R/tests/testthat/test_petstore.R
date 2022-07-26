@@ -11,11 +11,12 @@ pet <- Pet$new("name_test",
   ),
   status = "available"
 )
+pet_api$api_client$username <- "username123"
+pet_api$api_client$password <- "password123"
 result <- pet_api$AddPet(pet)
 
 test_that("AddPet", {
   expect_equal(pet_id, 123321)
-  #expect_equal(result, NULL)
   expect_equal(pet$toJSONString(), '{"id":123321,"category":{"id":450,"name":"test_cat"},"name":"name_test","photoUrls":["photo_test","second test"],"tags":[{"id":123,"name":"tag_test"},{"id":456,"name":"unknown"}],"status":"available"}')
 })
 
@@ -91,6 +92,13 @@ test_that("GetPetById", {
     response$tags,
     list(Tag$new(id = 123, name = "tag_test"), Tag$new(id = 456, name = "unknown"))
   )
+})
+
+test_that("GetPetByIdStreaming", {
+  result <- tryCatch(
+               pet_api$GetPetByIdStreaming(pet_id, stream_callback = function(x) { print(x) }),
+               ApiException = function(ex) ex
+            )
 })
 
 #test_that("test GetPetById exception", {
@@ -228,14 +236,19 @@ test_that("Tests oneOf", {
   expect_equal(pig2$actual_instance$color, "red")
   expect_equal(pig2$actual_instance$className, "BasquePig")
   expect_equal(pig2$toJSONString(), original_basque_pig$toJSONString())
-  
+
   expect_error(Pig$new(instance = basque_pig), 'Failed to initialize Pig with oneOf schemas BasquePig, DanishPig. Provided class name:  Pig')
 
-  # test nested oneOf
+  # test nested oneOf toJSONString
   nested_oneof <- NestedOneOf$new()
   nested_oneof$nested_pig <- pig
   nested_oneof$size <- 15
   expect_equal(nested_oneof$toJSONString(), '{"size":15,"nested_pig":{"className":"BasquePig","color":"red"}}')
+
+  # test fromJSONString with nested oneOf
+  nested_json_str <- '{"size":15,"nested_pig":{"className":"BasquePig","color":"red"}}'
+  nested_oneof2 <- NestedOneOf$new()$fromJSONString(nested_json_str)
+  expect_equal(nested_oneof2$toJSONString(), '{"size":15,"nested_pig":{"className":"BasquePig","color":"red"}}')
 
   # test toString
   expect_equal(as.character(jsonlite::minify(pig$toString())), "{\"actual_instance\":{\"className\":\"BasquePig\",\"color\":\"red\"},\"actual_type\":\"BasquePig\",\"one_of\":\"BasquePig, DanishPig\"}")
@@ -270,7 +283,7 @@ test_that("Tests anyOf", {
   expect_equal(pig$actual_instance$size, 7)
   expect_equal(pig$actual_instance$className, "DanishPig")
 
-  # test toJSON
+  # test toJSONString
   expect_equal(danish_pig$toJSONString(), original_danish_pig$toJSONString())
 
   basque_pig <- pig$fromJSON(basque_pig_json)
