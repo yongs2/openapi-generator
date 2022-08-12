@@ -255,6 +255,15 @@ public class DefaultGenerator implements Generator {
         }
 
         config.processOpts();
+
+        // resolve inline models
+        if (config.getUseInlineModelResolver()) {
+            InlineModelResolver inlineModelResolver = new InlineModelResolver();
+            inlineModelResolver.setInlineSchemaNameMapping(config.inlineSchemaNameMapping());
+            inlineModelResolver.setInlineSchemaNameDefaults(config.inlineSchemaNameDefault());
+            inlineModelResolver.flatten(openAPI);
+        }
+
         config.preprocessOpenAPI(openAPI);
 
         // set OpenAPI to make these available to all methods
@@ -892,14 +901,6 @@ public class DefaultGenerator implements Generator {
             } else {
                 LOGGER.info(stabilityMessage);
             }
-        }
-
-        // resolve inline models
-        if (config.getUseInlineModelResolver()) {
-            InlineModelResolver inlineModelResolver = new InlineModelResolver();
-            inlineModelResolver.setInlineSchemaNameMapping(config.inlineSchemaNameMapping());
-            inlineModelResolver.setInlineSchemaNameDefaults(config.inlineSchemaNameDefault());
-            inlineModelResolver.flatten(openAPI);
         }
 
         configureGeneratorProperties();
