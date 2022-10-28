@@ -1,0 +1,43 @@
+openapi: 3.0.0
+info:
+  title: Npcf_PolicyAuthorization Service API
+  version: 1.1.2
+  description: |
+    PCF Policy Authorization Service.
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.514 V16.7.0; 5G System; Policy Authorization Service;Stage 3.
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.514/'
+
+paths: {}
+components:
+  schemas:
+    # FIXME: invalid NewEventsSubscPutData
+    EventsSubscPutData:
+      description: Identifies the events the application subscribes to within an Events Subscription sub-resource data. It may contain the notification of the already met events
+      anyOf:
+        - $ref: '#/components/schemas/EventsSubscReqData'
+        - $ref: '#/components/schemas/EventsNotification'
+
+    EventsSubscReqData:
+      description: Identifies the events the application subscribes to.
+      type: object
+      required:
+        - events
+      properties:
+        events:
+          type: string
+
+    EventsNotification:
+      description: describes the notification of a matched event
+      type: object
+      required:
+        - evSubsUri
+        - evNotifs
+      properties:
+        evSubsUri:
+          type: string
+        evNotifs:
+          type: string

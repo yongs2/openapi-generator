@@ -1,0 +1,97 @@
+openapi: 3.0.0
+info:
+  version: '1.1.2'
+  title: 'Nudm_UEAU'
+  description: |
+    UDM UE Authentication Service.
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.503 Unified Data Management Services, version 16.6.0
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.503/'
+
+paths: {}
+components:
+  schemas:
+    AvEpsAka:
+      type: object
+      required:
+        - avType
+        - rand
+        - xres
+        - autn
+        - kasme
+      properties:
+        avType:
+          type: string
+        rand:
+          type: string
+        xres:
+          type: string
+        autn:
+          type: string
+        kasme:
+          type: string
+    AvImsGbaEapAka:
+      type: object
+      required:
+        - avType
+        - rand
+        - xres
+        - autn
+        - ck
+        - ik
+      properties:
+        avType:
+          type: string
+        rand:
+          type: string
+        xres:
+          type: string
+        autn:
+          type: string
+        ck:
+          type: string
+        ik:
+          type: string
+    AvEapAkaPrime:
+      type: object
+      required:
+        - avType
+        - rand
+        - xres
+        - autn
+        - ckPrime
+        - ikPrime
+      properties:
+        avType:
+          type: string
+        rand:
+          type: string
+        xres:
+          type: string
+        autn:
+          type: string
+        ckPrime:
+          type: string
+        ikPrime:
+          type: string
+
+    HssAuthenticationVectors:
+      oneOf:
+        - type: array
+          items:
+            $ref: '#/components/schemas/AvEpsAka'
+          minItems: 1
+          maxItems: 5
+        - type: array
+          items:
+            $ref: '#/components/schemas/AvImsGbaEapAka'
+          minItems: 1
+          maxItems: 5
+        - type: array
+          items:
+            $ref: '#/components/schemas/AvEapAkaPrime'
+          minItems: 1
+          maxItems: 5

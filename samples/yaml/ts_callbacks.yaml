@@ -1,0 +1,95 @@
+openapi: 3.0.0
+info:
+  version: '-'
+  title: 'Unified Data Repository Service API file for subscription data'
+  description: |
+    Unified Data Repository Service (subscription data).
+    The API version is defined in 3GPP TS 29.504.
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.505 V16.5.0; 5G System; Usage of the Unified Data Repository Service for subscription data; Stage 3
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.505/'
+
+paths:
+  /subscription-data/subs-to-notify:
+    post:
+      summary: Subscription data subscriptions
+      operationId: SubscriptionDataSubscriptions
+      tags:
+        - Subs To Notify (Collection)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionDataSubscriptions'
+        required: true
+      responses:
+        '201':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionDataSubscriptions'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nudr-dr/<apiVersion>/subscription-data/subs-to-notify/{subsId}'
+              required: true
+              schema:
+                type: string
+        default:
+          $ref: '#/components/responses/default'
+      callbacks:
+        onDataChange: # FIXME: Not generate Callback API
+          '{request.body#/callbackReference}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/DataChangeNotify'
+              responses:
+                '204':
+                  description: Expected response to a valid request
+components:
+  schemas:
+    SubscriptionDataSubscriptions:
+      type: object
+      required:
+        - monitoredResourceUris
+        - callbackReference
+      properties:
+        ueId:
+          type: string
+        callbackReference:
+          type: string
+        originalCallbackReference:
+          type: string
+        monitoredResourceUris:
+          type: string
+        expiry:
+          type: string
+        sdmSubscription:
+          type: string
+        subscriptionId:
+          type: string
+        supported-features:
+          type: string
+
+    DataChangeNotify:
+      type: object
+      properties:
+        originalCallbackReference:
+          type: string
+        ueId:
+          type: string
+
+#
+# HTTP responses
+#
+
+  responses:
+    default:
+      description: Generic Error

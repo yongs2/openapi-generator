@@ -1,0 +1,32 @@
+openapi: 3.0.0
+info:
+  title: Nchf_ConvergedCharging
+  version: 3.0.1
+  description: |
+    ConvergedCharging Service    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: >
+    3GPP TS 32.291 V16.6.0: Telecommunication management; Charging management; 
+    5G system, charging service; Stage 3.
+  url: 'http://www.3gpp.org/ftp/Specs/archive/32_series/32.291/'
+
+paths: {}
+components:
+  schemas:
+    PDUSessionInformation:
+      type: object
+      properties:
+        networkSlicingInfo:
+          type: string
+        3gppPSDataOffStatus:
+          $ref: '#/components/schemas/3GPPPSDataOffStatus'
+
+    # FIXME: Not add prefix(Model), Why?
+    3GPPPSDataOffStatus:
+      anyOf:
+        - type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+        - type: string
