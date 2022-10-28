@@ -33,7 +33,7 @@ func (obj *{{classname}}) UnmarshalJSON(data []byte) error {
 	var jsonDict map[string]interface{}
 	err = common.NewStrictDecoder(data).Decode(&jsonDict)
 	if err != nil {
-		return fmt.Errorf("Failed to unmarshal JSON into map for the discriminator lookup.")
+		return fmt.Errorf("failed to unmarshal JSON into map for the discriminator lookup")
 	}
 
 	{{/-first}}
@@ -75,11 +75,11 @@ func (obj *{{classname}}) UnmarshalJSON(data []byte) error {
                 obj.{{#lambda.type-to-name}}{{{.}}}{{/lambda.type-to-name}} = nil
                 {{/oneOf}}
 
-                return fmt.Errorf("Data matches more than one schema in oneOf({{classname}})")
+                return fmt.Errorf("data matches more than one schema in oneOf({{classname}})")
         } else if match == 1 {
                 return nil // exactly one match
         } else { // no match
-                return fmt.Errorf("Data failed to match schemas in oneOf({{classname}})")
+                return fmt.Errorf("data failed to match schemas in oneOf({{classname}})")
         }
 	{{/discriminator}}
 	{{/useOneOfDiscriminatorLookup}}
@@ -106,11 +106,11 @@ func (obj *{{classname}}) UnmarshalJSON(data []byte) error {
 		obj.{{#lambda.type-to-name}}{{{.}}}{{/lambda.type-to-name}} = nil
 		{{/oneOf}}
 
-		return fmt.Errorf("Data matches more than one schema in oneOf({{classname}})")
+		return fmt.Errorf("data matches more than one schema in oneOf({{classname}})")
 	} else if match == 1 {
 		return nil // exactly one match
 	} else { // no match
-		return fmt.Errorf("Data failed to match schemas in oneOf({{classname}})")
+		return fmt.Errorf("data failed to match schemas in oneOf({{classname}})")
 	}
 	{{/useOneOfDiscriminatorLookup}}
 }
