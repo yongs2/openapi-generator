@@ -175,10 +175,6 @@ public class KotlinServerDeprecatedCodegen extends AbstractKotlinCodegen {
     public void processOpts() {
         super.processOpts();
 
-        if (additionalProperties.containsKey(CodegenConstants.LIBRARY)) {
-            this.setLibrary((String) additionalProperties.get(CodegenConstants.LIBRARY));
-        }
-
         // set default library to "ktor"
         if (StringUtils.isEmpty(library)) {
             this.setLibrary(DEFAULT_LIBRARY);
@@ -218,7 +214,6 @@ public class KotlinServerDeprecatedCodegen extends AbstractKotlinCodegen {
 
         boolean generateApis = additionalProperties.containsKey(CodegenConstants.GENERATE_APIS) && (Boolean) additionalProperties.get(CodegenConstants.GENERATE_APIS);
         String packageFolder = (sourceFolder + File.separator + packageName).replace(".", File.separator);
-        String resourcesFolder = "src/main/resources"; // not sure this can be user configurable.
 
         supportingFiles.add(new SupportingFile("README.mustache", "", "README.md"));
         supportingFiles.add(new SupportingFile("Dockerfile.mustache", "", "Dockerfile"));

@@ -1,20 +1,28 @@
 package org.openapitools.model;
 
+import java.net.URI;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.openapitools.jackson.nullable.JsonNullable;
+import java.time.OffsetDateTime;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
+
+
+import java.util.*;
+import javax.annotation.Generated;
 
 /**
  * Model for testing model name same as property name
  */
+
 @ApiModel(description = "Model for testing model name same as property name")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
-public class Name   {
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
+public class Name {
+
   @JsonProperty("name")
   private Integer name;
 
@@ -25,7 +33,7 @@ public class Name   {
   private String property;
 
   @JsonProperty("123Number")
-  private Integer _123number;
+  private Integer _123Number;
 
   public Name name(Integer name) {
     this.name = name;
@@ -36,10 +44,8 @@ public class Name   {
    * Get name
    * @return name
   */
+  @NotNull 
   @ApiModelProperty(required = true, value = "")
-  @NotNull
-
-
   public Integer getName() {
     return name;
   }
@@ -57,9 +63,8 @@ public class Name   {
    * Get snakeCase
    * @return snakeCase
   */
+  
   @ApiModelProperty(readOnly = true, value = "")
-
-
   public Integer getSnakeCase() {
     return snakeCase;
   }
@@ -77,9 +82,8 @@ public class Name   {
    * Get property
    * @return property
   */
+  
   @ApiModelProperty(value = "")
-
-
   public String getProperty() {
     return property;
   }
@@ -88,26 +92,24 @@ public class Name   {
     this.property = property;
   }
 
-  public Name _123number(Integer _123number) {
-    this._123number = _123number;
+  public Name _123Number(Integer _123Number) {
+    this._123Number = _123Number;
     return this;
   }
 
   /**
-   * Get _123number
-   * @return _123number
+   * Get _123Number
+   * @return _123Number
   */
+  
   @ApiModelProperty(readOnly = true, value = "")
-
-
-  public Integer get123number() {
-    return _123number;
+  public Integer get123Number() {
+    return _123Number;
   }
 
-  public void set123number(Integer _123number) {
-    this._123number = _123number;
+  public void set123Number(Integer _123Number) {
+    this._123Number = _123Number;
   }
-
 
   @Override
   public boolean equals(Object o) {
@@ -121,23 +123,22 @@ public class Name   {
     return Objects.equals(this.name, name.name) &&
         Objects.equals(this.snakeCase, name.snakeCase) &&
         Objects.equals(this.property, name.property) &&
-        Objects.equals(this._123number, name._123number);
+        Objects.equals(this._123Number, name._123Number);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, snakeCase, property, _123number);
+    return Objects.hash(name, snakeCase, property, _123Number);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class Name {\n");
-    
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    snakeCase: ").append(toIndentedString(snakeCase)).append("\n");
     sb.append("    property: ").append(toIndentedString(property)).append("\n");
-    sb.append("    _123number: ").append(toIndentedString(_123number)).append("\n");
+    sb.append("    _123Number: ").append(toIndentedString(_123Number)).append("\n");
     sb.append("}");
     return sb.toString();
   }

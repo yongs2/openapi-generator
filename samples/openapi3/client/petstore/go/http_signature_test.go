@@ -30,7 +30,7 @@ import (
 	"testing"
 	"time"
 
-	sw "./go-petstore"
+	sw "go-petstore"
 )
 
 // Test RSA private key as published in Appendix C 'Test Values' of
@@ -276,7 +276,7 @@ func executeHttpSignatureAuth(t *testing.T, authConfig *sw.HttpSignatureAuth, ex
 	newPet := (sw.Pet{Id: sw.PtrInt64(12992), Name: "gopher",
 		PhotoUrls: []string{"http://1.com", "http://2.com"},
 		Status:    sw.PtrString("pending"),
-		Tags:      &[]sw.Tag{sw.Tag{Id: sw.PtrInt64(1), Name: sw.PtrString("tag2")}}})
+		Tags:      []sw.Tag{{Id: sw.PtrInt64(1), Name: sw.PtrString("tag2")}}})
 
 	fmt.Printf("Request with HTTP signature. Scheme: '%s'. Algorithm: '%s'. MaxValidity: %v. Headers: '%v'\n",
 		authConfig.SigningScheme, authConfig.SigningAlgorithm, authConfig.SignatureMaxValidity, authConfig.SignedHeaders)
@@ -650,7 +650,7 @@ func TestInvalidHttpSignatureConfiguration(t *testing.T) {
 
 	authConfig = sw.HttpSignatureAuth{}
 	_, err = authConfig.ContextWithValue(context.Background())
-	if err == nil || !strings.Contains(err.Error(), "Key ID must be specified") {
+	if err == nil || !strings.Contains(err.Error(), "key ID must be specified") {
 		t.Fatalf("Invalid configuration: %v", err)
 	}
 
@@ -658,7 +658,7 @@ func TestInvalidHttpSignatureConfiguration(t *testing.T) {
 		KeyId: "my-key-id",
 	}
 	_, err = authConfig.ContextWithValue(context.Background())
-	if err == nil || !strings.Contains(err.Error(), "Private key path must be specified") {
+	if err == nil || !strings.Contains(err.Error(), "private key path must be specified") {
 		t.Fatalf("Invalid configuration: %v", err)
 	}
 
@@ -667,7 +667,7 @@ func TestInvalidHttpSignatureConfiguration(t *testing.T) {
 		PrivateKeyPath: "test.pem",
 	}
 	_, err = authConfig.ContextWithValue(context.Background())
-	if err == nil || !strings.Contains(err.Error(), "Invalid signing scheme") {
+	if err == nil || !strings.Contains(err.Error(), "invalid signing scheme") {
 		t.Fatalf("Invalid configuration: %v", err)
 	}
 
@@ -677,7 +677,7 @@ func TestInvalidHttpSignatureConfiguration(t *testing.T) {
 		SigningScheme:  "garbage",
 	}
 	_, err = authConfig.ContextWithValue(context.Background())
-	if err == nil || !strings.Contains(err.Error(), "Invalid signing scheme") {
+	if err == nil || !strings.Contains(err.Error(), "invalid signing scheme") {
 		t.Fatalf("Invalid configuration: %v", err)
 	}
 
@@ -699,7 +699,7 @@ func TestInvalidHttpSignatureConfiguration(t *testing.T) {
 		SignedHeaders:  []string{"foo", "bar", "Authorization"},
 	}
 	_, err = authConfig.ContextWithValue(context.Background())
-	if err == nil || !strings.Contains(err.Error(), "Signed headers cannot include the 'Authorization' header") {
+	if err == nil || !strings.Contains(err.Error(), "signed headers cannot include the 'Authorization' header") {
 		t.Fatalf("Invalid configuration: %v", err)
 	}
 
@@ -711,7 +711,7 @@ func TestInvalidHttpSignatureConfiguration(t *testing.T) {
 		SignatureMaxValidity: -7 * time.Minute,
 	}
 	_, err = authConfig.ContextWithValue(context.Background())
-	if err == nil || !strings.Contains(err.Error(), "Signature max validity must be a positive value") {
+	if err == nil || !strings.Contains(err.Error(), "signature max validity must be a positive value") {
 		t.Fatalf("Invalid configuration: %v", err)
 	}
 }

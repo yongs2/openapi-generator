@@ -39,7 +39,7 @@ namespace Org.OpenAPITools.Model
         public enum JustSymbolEnum
         {
             /// <summary>
-            /// Enum GreaterThanOrEqualTo for value: >=
+            /// Enum GreaterThanOrEqualTo for value: &gt;&#x3D;
             /// </summary>
             [EnumMember(Value = ">=")]
             GreaterThanOrEqualTo = 1,
@@ -56,10 +56,10 @@ namespace Org.OpenAPITools.Model
         /// <summary>
         /// Gets or Sets JustSymbol
         /// </summary>
-        
+
         [DataMember(Name = "just_symbol", EmitDefaultValue = false)]
-        public JustSymbolEnum? JustSymbol 
-        { 
+        public JustSymbolEnum? JustSymbol
+        {
             get{ return _JustSymbol;}
             set
             {
@@ -98,15 +98,32 @@ namespace Org.OpenAPITools.Model
 
         }
 
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EnumArrays" /> class.
+        /// </summary>
+        /// <param name="justSymbol">justSymbol.</param>
+        /// <param name="arrayEnum">arrayEnum.</param>
+        public EnumArrays(JustSymbolEnum? justSymbol = default(JustSymbolEnum?), List<ArrayEnumEnum> arrayEnum = default(List<ArrayEnumEnum>))
+        {
+            this._JustSymbol = justSymbol;
+            if (this.JustSymbol != null)
+            {
+                this._flagJustSymbol = true;
+            }
+            this._ArrayEnum = arrayEnum;
+            if (this.ArrayEnum != null)
+            {
+                this._flagArrayEnum = true;
+            }
+            this.AdditionalProperties = new Dictionary<string, object>();
+        }
 
         /// <summary>
         /// Gets or Sets ArrayEnum
         /// </summary>
-        
         [DataMember(Name = "array_enum", EmitDefaultValue = false)]
-        public List<ArrayEnumEnum> ArrayEnum 
-        { 
+        public List<EnumArrays.ArrayEnumEnum> ArrayEnum
+        {
             get{ return _ArrayEnum;}
             set
             {
@@ -114,7 +131,7 @@ namespace Org.OpenAPITools.Model
                 _flagArrayEnum = true;
             }
         }
-        private List<ArrayEnumEnum> _ArrayEnum;
+        private List<EnumArrays.ArrayEnumEnum> _ArrayEnum;
         private bool _flagArrayEnum;
 
         /// <summary>
@@ -125,18 +142,6 @@ namespace Org.OpenAPITools.Model
         {
             return _flagArrayEnum;
         }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EnumArrays" /> class.
-        /// </summary>
-        /// <param name="justSymbol">justSymbol.</param>
-        /// <param name="arrayEnum">arrayEnum.</param>
-        public EnumArrays(JustSymbolEnum? justSymbol = default(JustSymbolEnum?), List<ArrayEnumEnum> arrayEnum = default(List<ArrayEnumEnum>))
-        {
-            this._JustSymbol = justSymbol;
-            this._ArrayEnum = arrayEnum;
-            this.AdditionalProperties = new Dictionary<string, object>();
-        }
-
         /// <summary>
         /// Gets or Sets additional properties
         /// </summary>
@@ -149,7 +154,7 @@ namespace Org.OpenAPITools.Model
         /// <returns>String presentation of the object</returns>
         public override string ToString()
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             sb.Append("class EnumArrays {\n");
             sb.Append("  JustSymbol: ").Append(JustSymbol).Append("\n");
             sb.Append("  ArrayEnum: ").Append(ArrayEnum).Append("\n");
@@ -196,10 +201,15 @@ namespace Org.OpenAPITools.Model
             unchecked // Overflow is fine, just wrap
             {
                 int hashCode = 41;
-                hashCode = hashCode * 59 + this.JustSymbol.GetHashCode();
-                hashCode = hashCode * 59 + this.ArrayEnum.GetHashCode();
+                hashCode = (hashCode * 59) + this.JustSymbol.GetHashCode();
+                if (this.ArrayEnum != null)
+                {
+                    hashCode = (hashCode * 59) + this.ArrayEnum.GetHashCode();
+                }
                 if (this.AdditionalProperties != null)
-                    hashCode = hashCode * 59 + this.AdditionalProperties.GetHashCode();
+                {
+                    hashCode = (hashCode * 59) + this.AdditionalProperties.GetHashCode();
+                }
                 return hashCode;
             }
         }
@@ -209,7 +219,7 @@ namespace Org.OpenAPITools.Model
         /// </summary>
         /// <param name="validationContext">Validation context</param>
         /// <returns>Validation Result</returns>
-        IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> IValidatableObject.Validate(ValidationContext validationContext)
+        public IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> Validate(ValidationContext validationContext)
         {
             yield break;
         }
