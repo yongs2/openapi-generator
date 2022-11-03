@@ -97,6 +97,16 @@ OUT_DIR=/out/ts_allof_pattern/client
 # IN_YAML=/root/src/samples/yaml/ts_callbacks.yaml
 # OUT_DIR=/out/ts_callbacks/client
 
+MVN_VERSION=$(mvn -q \
+    -Dexec.executable=echo \
+    -Dexec.args='${project.version}' \
+    --non-recursive \
+    exec:exec)
+
+# version 별로 OUT_DIR 생성
+OUT_DIR="${OUT_DIR}_${MVN_VERSION}"
+
+# 디렉토리 생성
 mkdir -p ${OUT_DIR};
 java -Dlog.level=debug \
     -jar /root/src/modules/openapi-generator-cli/target/openapi-generator-cli.jar \
