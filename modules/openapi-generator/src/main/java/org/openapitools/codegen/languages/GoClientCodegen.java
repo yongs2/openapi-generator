@@ -422,10 +422,12 @@ public class GoClientCodegen extends AbstractGoCodegen {
 
             for (CodegenProperty param : Iterables.concat(model.vars, model.allVars, model.requiredVars, model.optionalVars)) {
                 param.vendorExtensions.put("x-go-base-type", param.dataType);
+                LOGGER.info(">> FIXME << GoClientCodegen.postProcessModels.dataType[{}],N[{}],C[{}],F[{}],A[{}],isModel[{}]", param.dataType, param.isNullable, param.isContainer, param.isFreeFormObject, param.isAnyType, param.isModel);
                 if (!param.isNullable || param.isContainer || param.isFreeFormObject
                     || (param.isAnyType && !param.isModel)) {
                     continue;
                 }
+                LOGGER.info(">> FIXME << GoClientCodegen.postProcessModels.dataType[{}],D[{}],M[{}],A[{}] >>>", param.dataType, param.isDateTime, param.isMap, param.isArray);
                 if (param.isDateTime) {
                     // Note this could have been done by adding the following line in processOpts(),
                     // however, we only want to represent the DateTime object as NullableTime if
@@ -448,6 +450,7 @@ public class GoClientCodegen extends AbstractGoCodegen {
                     param.dataType = "Nullable" + Character.toUpperCase(param.dataType.charAt(0))
                             + param.dataType.substring(1);
                 }
+                LOGGER.info(">> FIXME << GoClientCodegen.postProcessModels.dataType[{}] <<< Done", param.dataType);
             }
 
             // additional import for different cases

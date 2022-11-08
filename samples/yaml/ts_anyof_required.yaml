@@ -22,7 +22,7 @@ components:
         - nfInstanceId
         - nfType
         - nfStatus
-      anyOf:
+      anyOf: # FIXME: Not handled
         - required: [ fqdn ]
         - required: [ ipv4Addresses ]
         - required: [ ipv6Addresses ]

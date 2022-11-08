@@ -873,7 +873,7 @@ public class ModelUtils {
                 return referencedSchema;
             }
         }
-        LOGGER.debug(">> FIXME << getReferencedSchema.02.schema[{}]", schema.getName());
+        LOGGER.debug(">> FIXME << getReferencedSchema.02.schema[{}],ref[{}]", schema.getName(), schema.get$ref());
         return schema;
     }
 
