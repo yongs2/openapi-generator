@@ -423,7 +423,7 @@ public class GoClientCodegen extends AbstractGoCodegen {
             for (CodegenProperty param : Iterables.concat(model.vars, model.allVars, model.requiredVars, model.optionalVars)) {
                 param.vendorExtensions.put("x-go-base-type", param.dataType);
                 LOGGER.info(">> FIXME << GoClientCodegen.postProcessModels.dataType[{}],N[{}],C[{}],F[{}],A[{}],isModel[{}]", param.dataType, param.isNullable, param.isContainer, param.isFreeFormObject, param.isAnyType, param.isModel);
-                if (!param.isNullable || param.isContainer || param.isFreeFormObject
+                if (!param.isNullable || /*FIXME: NullableMap을 위해 제거,param.isContainer ||*/ param.isFreeFormObject
                     || (param.isAnyType && !param.isModel)) {
                     continue;
                 }

@@ -471,6 +471,51 @@ public class ModelUtils {
      */
     public static boolean isComposedSchema(Schema schema) {
         if (schema instanceof ComposedSchema) {
+            ComposedSchema composed = (ComposedSchema) schema; // FIXME: allOf-pattern 에 대해 예외처리
+            int modelImplCnt = 0; // only one inline object allowed in a ComposedModel
+            if (composed.getAllOf() != null) {
+                LOGGER.info(">> FIXME << isComposedSchema.getAllOf[{}]", (composed.getAllOf() != null));
+                for (Schema innerSchema : composed.getAllOf()) { // TODO need to work with anyOf, oneOf as well
+                    if ( (innerSchema.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
+                        && (innerSchema.get$ref() == null)
+                        && (innerSchema.getProperties() == null)
+                        && (innerSchema.getAdditionalProperties() == null) ) {
+                        LOGGER.info(">> FIXME << isComposedSchema.Pattern[{}],Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", innerSchema.getPattern(), innerSchema.getType(), innerSchema.get$ref(), innerSchema.getProperties(), innerSchema.getAdditionalProperties());
+                        continue;
+                    }
+                    modelImplCnt += 1;
+                }
+            }
+            if (composed.getAnyOf() != null) {
+                LOGGER.info(">> FIXME << isComposedSchema.getAnyOf[{}]", (composed.getAnyOf() != null));
+                for (Schema innerSchema : composed.getAnyOf()) { // TODO need to work with anyOf, oneOf as well
+                    if ( (innerSchema.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
+                        && (innerSchema.get$ref() == null)
+                        && (innerSchema.getProperties() == null)
+                        && (innerSchema.getAdditionalProperties() == null) ) {
+                        LOGGER.info(">> FIXME << isComposedSchema.Pattern[{}],Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", innerSchema.getPattern(), innerSchema.getType(), innerSchema.get$ref(), innerSchema.getProperties(), innerSchema.getAdditionalProperties());
+                        continue;
+                    }
+                    modelImplCnt += 1;
+                }
+            }
+            if (composed.getOneOf() != null) {
+                LOGGER.info(">> FIXME << isComposedSchema.getOneOf[{}]", (composed.getOneOf() != null));
+                for (Schema innerSchema : composed.getOneOf()) { // TODO need to work with anyOf, oneOf as well
+                    if ( (innerSchema.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
+                        && (innerSchema.get$ref() == null)
+                        && (innerSchema.getProperties() == null)
+                        && (innerSchema.getAdditionalProperties() == null) ) {
+                        LOGGER.info(">> FIXME << isComposedSchema.Pattern[{}],Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", innerSchema.getPattern(), innerSchema.getType(), innerSchema.get$ref(), innerSchema.getProperties(), innerSchema.getAdditionalProperties());
+                        continue;
+                    }
+                    modelImplCnt += 1;
+                }
+            }
+            LOGGER.info(">> FIXME << isComposedSchema.modelImplCnt[{}]", modelImplCnt);
+            if (modelImplCnt <= 0) {
+                return false;
+            }
             return true;
         }
         return false;
@@ -866,14 +911,14 @@ public class ModelUtils {
     public static Schema getReferencedSchema(OpenAPI openAPI, Schema schema) {
         if (schema != null && StringUtils.isNotEmpty(schema.get$ref())) {
             String name = getSimpleRef(schema.get$ref());
-            LOGGER.debug(">> FIXME << getReferencedSchema.01.schema[{}],getSimpleRef[{}]", schema.getName(), name);
+            LOGGER.debug(">> FIXME << getReferencedSchema.01.schema.Name[{}],Type[{}],Title[{}],getSimpleRef[{}]", schema.getName(), schema.getType(), schema.getTitle(), name);
             Schema referencedSchema = getSchema(openAPI, name);
             if (referencedSchema != null) {
-                LOGGER.debug(">> FIXME << getReferencedSchema.02.schema[{}],referencedSchema[{}]", schema.getName(), referencedSchema.getName());
+                LOGGER.debug(">> FIXME << getReferencedSchema.02.schema.Name[{}],Type[{}],Title[{}],referencedSchema.Name[{}]Type[{}]Title[{}]", schema.getName(), schema.getType(), schema.getTitle(), referencedSchema.getName(), referencedSchema.getType(), referencedSchema.getTitle());
                 return referencedSchema;
             }
         }
-        LOGGER.debug(">> FIXME << getReferencedSchema.02.schema[{}],ref[{}]", schema.getName(), schema.get$ref());
+        LOGGER.debug(">> FIXME << getReferencedSchema.03.schema.Name[{}],Type[{}],Title[{}],ref[{}]", schema.getName(), schema.getType(), schema.getTitle(), schema.get$ref());
         return schema;
     }
 
@@ -1638,6 +1683,14 @@ public class ModelUtils {
         // TODO remove the ref check here, or pass in the spec version
         // openapi 3.1.0 specs allow ref to be adjacent to any keyword
         // openapi 3.0.3 and earlier do not allow adjacent keywords to refs
+        if ( (schema.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
+            && (schema.get$ref() == null)
+            && (schema.getProperties() == null)
+            && (schema.getAdditionalProperties() == null) ) {
+            // LOGGER.info(">> FIXME << isAnyType.Pattern[{}],Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", schema.getPattern(), schema.getType(), schema.get$ref(), schema.getProperties(), schema.getAdditionalProperties());
+            return false;
+        }
+        
         return (schema.get$ref() == null && schema.getType() == null);
     }
 

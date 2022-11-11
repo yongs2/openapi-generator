@@ -542,9 +542,10 @@ public class InlineModelResolver {
             return;
         }
         ListIterator<Schema> listIterator = children.listIterator();
-        LOGGER.info(">> FIXME << 01.flattenComposedChildren,key[{}]", key);
+        LOGGER.info(">> FIXME << flattenComposedChildren.01,key[{}], START >>>>>", key);
         while (listIterator.hasNext()) {
             Schema component = listIterator.next();
+            LOGGER.info(">> FIXME << flattenComposedChildren.02,key[{}],component[{}]", key, component);
             if ((component != null) &&
                     (component.get$ref() == null) &&
                     ((component.getProperties() != null && !component.getProperties().isEmpty()) ||
@@ -562,7 +563,7 @@ public class InlineModelResolver {
                 String innerModelName = resolveModelName(component.getTitle(), key);
                 Schema innerModel = modelFromProperty(openAPI, component, innerModelName);
                 String existing = matchGenerated(innerModel);
-                LOGGER.info(">> FIXME << 03.flattenComposedChildren,key[{}],innerModelName[{}],innerModel[{}],existing[{}]", key, innerModelName, innerModel, existing);
+                LOGGER.info(">> FIXME << flattenComposedChildren.03,key[{}],innerModelName[{}],innerModel[{}],existing[{}]", key, innerModelName, innerModel, existing);
                 if (existing == null) {
                     innerModelName = addSchemas(innerModelName, innerModel);
                     Schema schema = new Schema().$ref(innerModelName);
@@ -575,6 +576,7 @@ public class InlineModelResolver {
                 }
             }
         }
+        LOGGER.info(">> FIXME << flattenComposedChildren.01,key[{}], DONE <<<<<", key);
     }
 
     /**
@@ -587,18 +589,23 @@ public class InlineModelResolver {
         }
 
         List<String> modelNames = new ArrayList<String>(models.keySet());
+        LOGGER.info(">> FIXME << flattenComponents,modelNames[{}], START >>>>>", modelNames);
         for (String modelName : modelNames) {
             Schema model = models.get(modelName);
+            LOGGER.info(">> FIXME << flattenComponents,model[{}]", modelName);
             if (ModelUtils.isComposedSchema(model)) {
+                LOGGER.info(">> FIXME << flattenComponents,model[{}],isComposedSchema", modelName);
                 ComposedSchema m = (ComposedSchema) model;
                 // inline child schemas
                 flattenComposedChildren(modelName + "_allOf", m.getAllOf());
                 flattenComposedChildren(modelName + "_anyOf", m.getAnyOf());
                 flattenComposedChildren(modelName + "_oneOf", m.getOneOf());
             } else if (model instanceof Schema) {
+                LOGGER.info(">> FIXME << flattenComponents,model[{}],Schema", modelName);
                 gatherInlineModels(model, modelName);
             }
         }
+        LOGGER.info(">> FIXME << flattenComponents,modelNames[{}], DONE <<<<<", modelNames);
     }
 
     /**

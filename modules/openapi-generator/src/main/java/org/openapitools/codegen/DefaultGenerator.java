@@ -453,6 +453,8 @@ public class DefaultGenerator implements Generator {
         // process models only
         for (String name : modelKeys) {
             try {
+                LOGGER.info(">> FIXME << generateModels.01.Model(Name({}) START >>>>>", name);
+
                 //don't generate models that have an import mapping
                 if (config.schemaMapping().containsKey(name)) {
                     LOGGER.debug("Model {} not imported due to import mapping", name);
@@ -518,7 +520,7 @@ public class DefaultGenerator implements Generator {
                 models.putAll(config.additionalProperties());
                 allProcessedModels.put(name, models);
                 
-                LOGGER.info(">> FIXME << generateModels.01.Model(Name({})", name);
+                LOGGER.info(">> FIXME << generateModels.01.Model(Name({}) Done <<<<<", name);
             } catch (Exception e) {
                 throw new RuntimeException("Could not process model '" + name + "'" + ".Please make sure that your schema is correct!", e);
             }
@@ -1293,8 +1295,9 @@ public class DefaultGenerator implements Generator {
             Schema schema = definitionsEntry.getValue();
             if (schema == null)
                 throw new RuntimeException("schema cannot be null in processModels");
-            LOGGER.debug(">> FIXME << processModels.before.fromModel.name[{}]", key);
+            LOGGER.debug(">> FIXME << processModels.01.fromModel.name[{}] START >>>>>", key);
             CodegenModel cm = config.fromModel(key, schema);
+            LOGGER.debug(">> FIXME << processModels.02.fromModel.name[{}] CodegenModel[{}]", key, cm);
             ModelMap mo = new ModelMap();
             mo.setModel(cm);
             mo.put("importPath", config.toModelImport(cm.classname));
@@ -1303,6 +1306,7 @@ public class DefaultGenerator implements Generator {
             cm.removeSelfReferenceImport();
 
             allImports.addAll(cm.imports);
+            LOGGER.debug(">> FIXME << processModels.02.fromModel.name[{}] DONE <<<<<<", key);
         }
         objs.setModels(modelMaps);
         Set<String> importSet = new ConcurrentSkipListSet<>();

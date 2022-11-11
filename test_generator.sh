@@ -167,7 +167,12 @@ generate_all() {
         fi
 
         # 디렉토리 생성
+        if [ -d ${OUT_DIR} ] ; then
+            rm -Rf ${OUT_DIR};
+        fi
         mkdir -p ${OUT_DIR};
+
+        # 실행
         java -Dlog.level=debug \
             -jar /root/src/modules/openapi-generator-cli/target/openapi-generator-cli.jar \
             generate -i ${IN_YAML} \
@@ -183,7 +188,7 @@ generate_all() {
 }
 
 # Run
-init_3GPP
+# init_3GPP
 init_testCases
 getVersion
 generate_all

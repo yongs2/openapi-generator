@@ -2140,6 +2140,7 @@ public class DefaultCodegen implements CodegenConfig {
      **/
     @SuppressWarnings("static-method")
     public String getSchemaType(Schema schema) {
+        LOGGER.info(">> FIXME << getSchemaType.schema.Title[{}],Type[{}],$ref[{}],Pp[{}],App[{}],getSingleSchemaType=[{}], START >>>>", schema.getTitle(), schema.getType(), schema.get$ref(), schema.getProperties(), schema.getAdditionalProperties(), getSingleSchemaType(schema));
         if (schema instanceof ComposedSchema) { // composed schema
             ComposedSchema cs = (ComposedSchema) schema;
             // Get the interfaces, i.e. the set of elements under 'allOf', 'anyOf' or 'oneOf'.
@@ -2150,6 +2151,14 @@ public class DefaultCodegen implements CodegenConfig {
             // For example, if a 'allOf' composed schema has $ref children,
             // add the type of each child to the list of names.
             for (Schema s : schemas) {
+                if ( (getSingleSchemaType(s) == "object") // FIXME: allOf-pattern 에 대해 예외처리
+                    && (s.getType() == null) 
+                    && (s.get$ref() == null)
+                    && (s.getProperties() == null)
+                    && (s.getAdditionalProperties() == null) ) {
+                    LOGGER.info(">> FIXME << getSchemaType.Title[{}],Type[{}],$ref[{}],Pp[{}],App[{}],getSingleSchemaType=[{}],EXCEPTION", s.getTitle(), s.getType(), s.get$ref(), s.getProperties(), s.getAdditionalProperties(), getSingleSchemaType(s));
+                    return getSingleSchemaType(schema);
+                }
                 names.add(getSingleSchemaType(s));
             }
 
@@ -2162,8 +2171,8 @@ public class DefaultCodegen implements CodegenConfig {
             }
         }
 
+        LOGGER.info(">> FIXME << getSchemaType.schema.Title[{}],Type[{}],$ref[{}],Pp[{}],App[{}],getSingleSchemaType=[{}], DONE <<<<<", schema.getTitle(), schema.getType(), schema.get$ref(), schema.getProperties(), schema.getAdditionalProperties(), getSingleSchemaType(schema));
         return getSingleSchemaType(schema);
-
     }
 
     protected Schema<?> getSchemaItems(ArraySchema schema) {
@@ -2536,14 +2545,15 @@ public class DefaultCodegen implements CodegenConfig {
         Map<String, Schema> allProperties = new LinkedHashMap<>();
         List<String> allRequired = new ArrayList<>();
 
+        LOGGER.info(">> FIXME << updateModelForComposedSchema, START >>>>>");
         // if schema has properties outside of allOf/oneOf/anyOf also add them to m
         if (composed.getProperties() != null && !composed.getProperties().isEmpty()) {
             if (composed.getOneOf() != null && !composed.getOneOf().isEmpty()) {
                 LOGGER.warn("'oneOf' is intended to include only the additional optional OAS extension discriminator object. " +
                         "For more details, see https://json-schema.org/draft/2019-09/json-schema-core.html#rfc.section.9.2.1.3 and the OAS section on 'Composition and Inheritance'.");
-                LOGGER.info(">> FIXME << 01.composed.getOneOf()=[{}]", composed.getOneOf());
+                LOGGER.info(">> FIXME << updateModelForComposedSchema,01.composed.getOneOf()=[{}]", composed.getOneOf());
             }
-            LOGGER.info(">> FIXME << 02.composed.getRequired()=[{}]", composed.getRequired());
+            LOGGER.info(">> FIXME << updateModelForComposedSchema,02.composed.getRequired()=[{}]", composed.getRequired());
             addVars(m, unaliasPropertySchema(composed.getProperties()), composed.getRequired(), null, null);
         }
 
@@ -2559,6 +2569,14 @@ public class DefaultCodegen implements CodegenConfig {
                 int modelImplCnt = 0; // only one inline object allowed in a ComposedModel
                 int modelDiscriminators = 0; // only one discriminator allowed in a ComposedModel
                 for (Schema innerSchema : composed.getAllOf()) { // TODO need to work with anyOf, oneOf as well
+                    if ( (innerSchema.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
+                        && (innerSchema.get$ref() == null)
+                        && (innerSchema.getProperties() == null)
+                        && (innerSchema.getAdditionalProperties() == null) ) {
+                        LOGGER.info(">> FIXME << updateModelForComposedSchema.Pattern[{}],Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", innerSchema.getPattern(), innerSchema.getType(), innerSchema.get$ref(), innerSchema.getProperties(), innerSchema.getAdditionalProperties());
+                        continue;
+                    }
+                    
                     if (m.discriminator == null && innerSchema.getDiscriminator() != null) {
                         LOGGER.debug("discriminator is set to null (not correctly set earlier): {}", m.name);
                         m.setDiscriminator(createDiscriminator(m.name, innerSchema, this.openAPI));
@@ -2594,13 +2612,20 @@ public class DefaultCodegen implements CodegenConfig {
 
             for (Schema interfaceSchema : interfaces) {
                 interfaceSchema = unaliasSchema(interfaceSchema);
-                LOGGER.info(">> FIXME << 03.interfaceSchema.ref[{}],required[{}],type[{}]", interfaceSchema.get$ref(), interfaceSchema.getRequired(), interfaceSchema.getType());
+                LOGGER.info(">> FIXME << updateModelForComposedSchema,03.interfaceSchema.ref[{}],required[{}],type[{}]", interfaceSchema.get$ref(), interfaceSchema.getRequired(), interfaceSchema.getType());
+                if ( (interfaceSchema.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
+                    && (interfaceSchema.get$ref() == null)
+                    && (interfaceSchema.getProperties() == null)
+                    && (interfaceSchema.getAdditionalProperties() == null) ) {
+                    LOGGER.info(">> FIXME << updateModelForComposedSchema.Pattern[{}],Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", interfaceSchema.getPattern(), interfaceSchema.getType(), interfaceSchema.get$ref(), interfaceSchema.getProperties(), interfaceSchema.getAdditionalProperties());
+                    continue;
+                }
 
                 if (StringUtils.isBlank(interfaceSchema.get$ref())) {
                     // primitive type
                     String languageType = getTypeDeclaration(interfaceSchema);
                     CodegenProperty interfaceProperty = fromProperty(languageType, interfaceSchema, false);
-                    LOGGER.info(">> FIXME << 03.interfaceSchema.getRequired()=[{}],languageType=[{}]", interfaceSchema.getRequired(), languageType);
+                    LOGGER.info(">> FIXME << updateModelForComposedSchema,03.interfaceSchema.getRequired()=[{}],languageType=[{}]", interfaceSchema.getRequired(), languageType);
                     if (ModelUtils.isArraySchema(interfaceSchema) || ModelUtils.isMapSchema(interfaceSchema)) {
                         while (interfaceProperty != null) {
                             addImport(m, interfaceProperty.complexType);
@@ -2611,7 +2636,7 @@ public class DefaultCodegen implements CodegenConfig {
                     List<String> reqs = interfaceSchema.getRequired();
                     if ((reqs != null) && (reqs.size() > 0)) {
                         interfaceSchema.set$ref(reqs.get(0));   // FIXME: force to set ref
-                        LOGGER.info(">> FIXME << 04.interfaceSchema.ref[{}],required[{}],type[{}]", interfaceSchema.get$ref(), interfaceSchema.getRequired(), interfaceSchema.getType());
+                        LOGGER.info(">> FIXME << updateModelForComposedSchema,04.interfaceSchema.ref[{}],required[{}],type[{}]", interfaceSchema.get$ref(), interfaceSchema.getRequired(), interfaceSchema.getType());
                         continue;
                     } else {
                         if (ModelUtils.isArraySchema(interfaceSchema) || ModelUtils.isMapSchema(interfaceSchema)) {
@@ -2622,21 +2647,21 @@ public class DefaultCodegen implements CodegenConfig {
                         }
 
                         if (composed.getAnyOf() != null) {
-                            LOGGER.info(">> FIXME << 05.composed.getAnyOf()=[{}],m.anyOf.contains({}})=[{}]", composed.getAnyOf(), languageType, m.anyOf.contains(languageType));
+                            LOGGER.info(">> FIXME << updateModelForComposedSchema,05.composed.getAnyOf()=[{}],m.anyOf.contains({}})=[{}]", composed.getAnyOf(), languageType, m.anyOf.contains(languageType));
                             if (m.anyOf.contains(languageType)) {
                                 LOGGER.warn("{} (anyOf schema) already has `{}` defined and therefore it's skipped.", m.name, languageType);
                             } else {
                                 m.anyOf.add(languageType);
                             }
                         } else if (composed.getOneOf() != null) {
-                            LOGGER.info(">> FIXME << 07.composed.getOneOf()=[{}],m.oneOf.contains({}})=[{}]", composed.getOneOf(), languageType, m.oneOf.contains(languageType));
+                            LOGGER.info(">> FIXME << updateModelForComposedSchema,07.composed.getOneOf()=[{}],m.oneOf.contains({}})=[{}]", composed.getOneOf(), languageType, m.oneOf.contains(languageType));
                             if (m.oneOf.contains(languageType)) {
                                 LOGGER.warn("{} (oneOf schema) already has `{}` defined and therefore it's skipped.", m.name, languageType);
                             } else {
                                 m.oneOf.add(languageType);
                             }
                         } else if (composed.getAllOf() != null) {
-                            LOGGER.info(">> FIXME << 09.composed.getAllOf()=[{}]", composed.getAllOf());
+                            LOGGER.info(">> FIXME << updateModelForComposedSchema,09.composed.getAllOf()=[{}]", composed.getAllOf());
                             // no need to add primitive type to allOf, which should comprise of schemas (models) only
                         } else {
                             LOGGER.error("Composed schema has incorrect anyOf, allOf, oneOf defined: {}", composed);
@@ -2675,22 +2700,27 @@ public class DefaultCodegen implements CodegenConfig {
                 } else if (composed.getOneOf() != null) {
                     m.oneOf.add(modelName);
                 } else if (composed.getAllOf() != null) {
+                    LOGGER.info(">> FIXME << updateModelForComposedSchema,modelName=[{}]", modelName);
                     m.allOf.add(modelName);
                 } else {
                     LOGGER.error("Composed schema has incorrect anyOf, allOf, oneOf defined: {}", composed);
                 }
-                LOGGER.info(">> FIXME << 20.composed.ref[{}],modelName=[{}],required=[{}],allRequired=[{}]", ref, modelName, required, allRequired);
+                LOGGER.info(">> FIXME << updateModelForComposedSchema,20.composed.ref[{}],modelName=[{}],required=[{}],allRequired=[{}]", ref, modelName, required, allRequired);
+            }
+            if (m.interfaces != null && m.interfaces.size() <= 0) { // FIXME: allOf-pattern 에 대해 예외처리
+                m.interfaces = null;
             }
         }
 
         if (parent != null && composed.getAllOf() != null) { // set parent for allOf only
             m.parentSchema = parentName;
             m.parent = toModelName(parentName);
-
+LOGGER.info(">> FIXME << updateModelForComposedSchema,21.parentName[{}],toModelName=({})", parentName, m.parent);
             if (supportsMultipleInheritance) {
                 m.allParents = new ArrayList<>();
                 for (String pname : allParents) {
                     String pModelName = toModelName(pname);
+                    LOGGER.info(">> FIXME << updateModelForComposedSchema,parentName[{}],toModelName({})=[{}]", parentName, pname, pModelName);
                     m.allParents.add(pModelName);
                     addImport(m, pModelName);
                 }
@@ -2714,16 +2744,16 @@ public class DefaultCodegen implements CodegenConfig {
         }
 
         if (composed.getRequired() != null) {
-            LOGGER.info(">> FIXME << composed.getRequired=[{}]", composed.getRequired());
+            LOGGER.info(">> FIXME << updateModelForComposedSchema,composed.getRequired=[{}]", composed.getRequired());
             required.addAll(composed.getRequired());
             allRequired.addAll(composed.getRequired());
         }
 
         if (schema.getProperties() != null) {   // GmdResult 와 같이 oneOf required: [] 을 가진 경우 생성자에서 누락이 발생하여 추가
-            LOGGER.info(">> FIXME << schema.getProperties() != null, getRequired()=[{}]", schema.getRequired());
+            LOGGER.info(">> FIXME << updateModelForComposedSchema,schema.getProperties() != null, getRequired()=[{}]", schema.getRequired());
             addVars(m, unaliasPropertySchema(schema.getProperties()), schema.getRequired(), null, null);
         } else {
-            LOGGER.info(">> FIXME << schema.getProperties() == null, required=[{}],allRequired=[{}]", required, allRequired);
+            LOGGER.info(">> FIXME << updateModelForComposedSchema,schema.getProperties() == null, required=[{}],allRequired=[{}]", required, allRequired);
             addVars(m, unaliasPropertySchema(properties), required, unaliasPropertySchema(allProperties), allRequired);
         }
 
@@ -2745,6 +2775,7 @@ public class DefaultCodegen implements CodegenConfig {
         if (Boolean.TRUE.equals(schema.getNullable())) {
             m.isNullable = Boolean.TRUE;
         }
+        LOGGER.info(">> FIXME << updateModelForComposedSchema, DONE <<<<");
         // end of code block for composed schema
     }
 
@@ -2892,13 +2923,14 @@ public class DefaultCodegen implements CodegenConfig {
      */
     @Override
     public CodegenModel fromModel(String name, Schema schema) {
-        LOGGER.info(">> FIXME << fromModel(Name({})", name);
+        LOGGER.info(">> FIXME << fromModel(Name({}) START >>>>> ", name);
         Map<String, Schema> allDefinitions = ModelUtils.getSchemas(this.openAPI);
         if (typeAliases == null) {
             // Only do this once during first call
             typeAliases = getAllAliases(allDefinitions);
         }
 
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({}),typeAliases[{}]", name, 1, typeAliases);
         CodegenModel m = CodegenModelFactory.newInstance(CodegenModelType.MODEL);
         if (schema.equals(trueSchema)) {
             m.setIsBooleanSchemaTrue(true);
@@ -2912,12 +2944,14 @@ public class DefaultCodegen implements CodegenConfig {
             return null;
         }
 
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})", name, 2);
         ModelUtils.syncValidationProperties(schema, m);
         if (openAPI != null) {
             HashMap<String, SchemaTestCase> schemaTestCases = extractSchemaTestCases(xSchemaTestExamplesRefPrefix + name);
             m.testCases = schemaTestCases;
         }
 
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})", name, 3);
         if (reservedWords.contains(name)) {
             m.name = escapeReservedWord(name);
         } else {
@@ -2934,13 +2968,18 @@ public class DefaultCodegen implements CodegenConfig {
         if (schema.getExtensions() != null && !schema.getExtensions().isEmpty()) {
             m.getVendorExtensions().putAll(schema.getExtensions());
         }
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})-1,typeAliases[{}]", name, 3, typeAliases);
         m.isAlias = (typeAliases.containsKey(name)
                 || isAliasOfSimpleTypes(schema)); // check if the unaliased schema is an alias of simple OAS types
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})-m.isAlias[{}]", name, 3, m.isAlias);
         m.setDiscriminator(createDiscriminator(name, schema, this.openAPI));
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})-2", name, 3);
         if (!this.getLegacyDiscriminatorBehavior()) {
             m.addDiscriminatorMappedModelsImports();
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})-3", name, 3);
         }
 
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})", name, 4);
         if (schema.getDeprecated() != null) {
             m.isDeprecated = schema.getDeprecated();
         }
@@ -2958,15 +2997,18 @@ public class DefaultCodegen implements CodegenConfig {
             m.allowableValues.put("values", schema.getEnum());
         }
         if (!ModelUtils.isArraySchema(schema)) {
+LOGGER.info(">> FIXME << fromModel(Name({}), getSchemaType({})", name, 1);
             m.dataType = getSchemaType(schema);
+LOGGER.info(">> FIXME << fromModel(Name({}), getSchemaType({}), m.dataType[{}]", name, 2, m.dataType);
         }
         if (!ModelUtils.isAnyType(schema) && Boolean.TRUE.equals(schema.getNullable())) {
             m.isNullable = Boolean.TRUE;
         }
-
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})", name, 5);
         m.setTypeProperties(schema);
         m.setFormat(schema.getFormat());
         m.setComposedSchemas(getComposedSchemas(schema));
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({}), isArraySchema[{}]", name, 6, ModelUtils.isArraySchema(schema));
         if (ModelUtils.isArraySchema(schema)) {
             CodegenProperty arrayProperty = fromProperty(name, schema, false);
             m.setItems(arrayProperty.items);
@@ -2993,12 +3035,14 @@ public class DefaultCodegen implements CodegenConfig {
         }
 
         if (schema instanceof ComposedSchema) {
+            LOGGER.info(">> FIXME << fromModel(Name({}).updateModelForComposedSchema, START >>>>>", name);
             updateModelForComposedSchema(m, schema, allDefinitions);
+            LOGGER.info(">> FIXME << fromModel(Name({}).updateModelForComposedSchema, DONE <<<<<", name);
         }
 
         // remove duplicated properties
         m.removeAllDuplicatedProperty();
-
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({}),m.discriminator[{}]", name, 7, (m.discriminator != null));
         // set isDiscriminator on the discriminator property
         if (m.discriminator != null) {
             String discPropName = m.discriminator.getPropertyBaseName();
@@ -3014,11 +3058,11 @@ public class DefaultCodegen implements CodegenConfig {
                 }
             }
         }
-
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({}),m.requiredVars=[{}][{}],m.allOf[{}]", name, 8, (m.requiredVars != null), m.requiredVars.size(), m.allOf.size());
         if (m.requiredVars != null && m.requiredVars.size() > 0) {
             m.setHasRequired(true);
         }
-
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({}),sortModelPropertiesByRequiredFlag[{}]", name, 9, sortModelPropertiesByRequiredFlag);
         if (sortModelPropertiesByRequiredFlag) {
             Comparator<CodegenProperty> comparator = new Comparator<CodegenProperty>() {
                 @Override
@@ -3031,7 +3075,7 @@ public class DefaultCodegen implements CodegenConfig {
             Collections.sort(m.vars, comparator);
             Collections.sort(m.allVars, comparator);
         }
-
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({}),m.vars[{}]", name, 10, (m.vars != null));
         // post process model properties
         if (m.vars != null) {
             for (CodegenProperty prop : m.vars) {
@@ -3039,15 +3083,17 @@ public class DefaultCodegen implements CodegenConfig {
             }
             m.hasVars = m.vars.size() > 0;
         }
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({}),m.allVars[{}]", name, 11, (m.allVars != null));
         if (m.allVars != null) {
             for (CodegenProperty prop : m.allVars) {
                 postProcessModelProperty(m, prop);
             }
         }
-
+LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({}),addSchemaImportsFromV3SpecLocations[{}]", name, 12, addSchemaImportsFromV3SpecLocations);
         if (addSchemaImportsFromV3SpecLocations) {
             addImports(m.imports, m.getImports(importContainerType, importBaseType, generatorMetadata.getFeatureSet()));
         }
+        LOGGER.info(">> FIXME << fromModel(Name({}) DONE,m.allOf[{}] <<<<<", name, m.allOf.size());
         return m;
     }
 
@@ -3121,6 +3167,7 @@ public class DefaultCodegen implements CodegenConfig {
         if (ModelUtils.isComposedSchema(refSchema)) {
             ComposedSchema composedSchema = (ComposedSchema) refSchema;
             if (composedSchema.getAllOf() != null) {
+LOGGER.info(">> FIXME << discriminatorFound,composedSchemaName[{}]", composedSchemaName);
                 // If our discriminator is in one of the allOf schemas break when we find it
                 for (Schema allOf : composedSchema.getAllOf()) {
                     CodegenProperty cp = discriminatorFound(composedSchemaName, allOf, discPropName, openAPI);
@@ -3188,6 +3235,7 @@ public class DefaultCodegen implements CodegenConfig {
      * @param sc The Schema that may contain the discriminator
      */
     private Discriminator recursiveGetDiscriminator(Schema sc, OpenAPI openAPI) {
+        LOGGER.info(">> FIXME << recursiveGetDiscriminator.Schema.Type[{}],$ref[{}],Pp[{}],App[{}], START >>>>>", sc.getType(), sc.get$ref(), sc.getProperties(), sc.getAdditionalProperties());
         Schema refSchema = ModelUtils.getReferencedSchema(openAPI, sc);
         Discriminator foundDisc = refSchema.getDiscriminator();
         if (foundDisc != null) {
@@ -3203,6 +3251,14 @@ public class DefaultCodegen implements CodegenConfig {
             if (composedSchema.getAllOf() != null) {
                 // If our discriminator is in one of the allOf schemas break when we find it
                 for (Schema allOf : composedSchema.getAllOf()) {
+                    LOGGER.info(">> FIXME << recursiveGetDiscriminator.allOf,Type[{}],$ref[{}],Pp[{}],App[{}], START >>>>>", allOf.getType(), allOf.get$ref(), allOf.getProperties(), allOf.getAdditionalProperties());
+                    if ( (allOf.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
+                        && (allOf.get$ref() == null)
+                        && (allOf.getProperties() == null)
+                        && (allOf.getAdditionalProperties() == null) ) {
+                        LOGGER.info(">> FIXME << recursiveGetDiscriminator.allOf,Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", allOf.getType(), allOf.get$ref(), allOf.getProperties(), allOf.getAdditionalProperties());
+                        continue;
+                    }
                     foundDisc = recursiveGetDiscriminator(allOf, openAPI);
                     if (foundDisc != null) {
                         disc.setPropertyName(foundDisc.getPropertyName());
@@ -3270,6 +3326,7 @@ public class DefaultCodegen implements CodegenConfig {
                 // there is no need for a discriminator.
             }
         }
+        LOGGER.info(">> FIXME << recursiveGetDiscriminator.Type[{}],$ref[{}],Pp[{}],App[{}], DONE <<<<<", sc.getType(), sc.get$ref(), sc.getProperties(), sc.getAdditionalProperties());
         return null;
     }
 
@@ -3369,6 +3426,7 @@ public class DefaultCodegen implements CodegenConfig {
                 if (ModelUtils.isComposedSchema(child)) {
                     ComposedSchema composedChild = (ComposedSchema) child;
                     List<Schema> parents = composedChild.getAllOf();
+LOGGER.info(">> FIXME << getAllOfDescendants,thisSchemaName[{}]", thisSchemaName);
                     if (parents != null) {
                         for (Schema parent : parents) {
                             String ref = parent.get$ref();
@@ -3408,6 +3466,7 @@ public class DefaultCodegen implements CodegenConfig {
     }
 
     protected CodegenDiscriminator createDiscriminator(String schemaName, Schema schema, OpenAPI openAPI) {
+        LOGGER.info(">> FIXME << createDiscriminator.schemaName[{}],Type[{}],$ref[{}],Pp[{}],App[{}], START >>>>>", schemaName, schema.getType(), schema.get$ref(), schema.getProperties(), schema.getAdditionalProperties());
         Discriminator sourceDiscriminator = recursiveGetDiscriminator(schema, openAPI);
         if (sourceDiscriminator == null) {
             return null;
@@ -3480,6 +3539,7 @@ public class DefaultCodegen implements CodegenConfig {
         }
         discriminator.getMappedModels().addAll(uniqueDescendants);
 
+        LOGGER.info(">> FIXME << createDiscriminator.schemaName[{}],Type[{}],$ref[{}],Pp[{}],App[{}], DONE <<<<<", schemaName, schema.getType(), schema.get$ref(), schema.getProperties(), schema.getAdditionalProperties());
         return discriminator;
     }
 
@@ -3509,6 +3569,7 @@ public class DefaultCodegen implements CodegenConfig {
             ComposedSchema composedSchema = (ComposedSchema) schema;
 
             if (composedSchema.getAllOf() != null) {
+LOGGER.info(">> FIXME << addProperties,schema[{}]", schema.getName());
                 for (Schema component : composedSchema.getAllOf()) {
                     addProperties(properties, required, component, visitedSchemas);
                 }
@@ -7917,9 +7978,14 @@ public class DefaultCodegen implements CodegenConfig {
         List<CodegenProperty> anyOf = new ArrayList<>();
         if (schema instanceof ComposedSchema) {
             ComposedSchema cs = (ComposedSchema) schema;
+LOGGER.info(">> FIXME << getComposedSchemas,schema[{}]", schema.getName());
             allOf = getComposedProperties(cs.getAllOf(), "all_of");
             oneOf = getComposedProperties(cs.getOneOf(), "one_of");
             anyOf = getComposedProperties(cs.getAnyOf(), "any_of");
+        }
+        if (allOf == null && oneOf == null && anyOf == null && notProperty == null) {
+LOGGER.info(">> FIXME << getComposedSchemas,schema[{}],ComposedSchema is NULL, so return NULL", schema.getName());
+            return null; // FIXME: allOf-pattern 에 대해 예외처리
         }
         return new CodegenComposedSchemas(
                 allOf,
@@ -7936,9 +8002,22 @@ public class DefaultCodegen implements CodegenConfig {
         List<CodegenProperty> xOf = new ArrayList<>();
         int i = 0;
         for (Schema xOfSchema : xOfCollection) {
+            LOGGER.info(">> FIXME << getComposedProperties.I[{}],Title[{}],Type[{}],$ref[{}],Pp[{}],App[{}], START >>>>>", i, xOfSchema.getTitle(), xOfSchema.getType(), xOfSchema.get$ref(), xOfSchema.getProperties(), xOfSchema.getAdditionalProperties());
+            if ( (xOfSchema.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
+                && (xOfSchema.get$ref() == null)
+                && (xOfSchema.getProperties() == null)
+                && (xOfSchema.getAdditionalProperties() == null) ) {
+                LOGGER.info(">> FIXME << getComposedProperties.I[{}],Title[{}],Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", i, xOfSchema.getTitle(), xOfSchema.getType(), xOfSchema.get$ref(), xOfSchema.getProperties(), xOfSchema.getAdditionalProperties());
+                continue;
+            }
             CodegenProperty cp = fromProperty(collectionName + "_" + i, xOfSchema, false);
             xOf.add(cp);
             i += 1;
+            LOGGER.info(">> FIXME << getComposedProperties.I[{}],Title[{}],Type[{}],$ref[{}],Pp[{}],App[{}], DONE <<<<<", i, xOfSchema.getTitle(), xOfSchema.getType(), xOfSchema.get$ref(), xOfSchema.getProperties(), xOfSchema.getAdditionalProperties());
+        }
+        if (xOf.size() <= 0) {  // FIXME: allOf-pattern 에 대해 예외처리
+            LOGGER.info(">> FIXME << getComposedProperties.I[{}],size({})", i, xOf.size());
+            return null;
         }
         return xOf;
     }
