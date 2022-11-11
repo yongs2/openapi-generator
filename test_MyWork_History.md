@@ -1,6 +1,14 @@
 # openapi-generator
 ## 작업 일지
 
+### git history 관리
+
+```sh
+git remote add upstream https://github.com/OpenAPITools/openapi-generator
+git pull upstream master
+git push origin master
+```
+
 ### 2022/11/11
 
 - ts_allof_pattern.yaml 을 수정
