@@ -20,3 +20,8 @@
 - ts_oneof
 - ts_ref_array
   - EnhancedDiagnostics5G 모델 생성 안됨, TODO:
+- TS29542_Nsmf_NIDD
+  - DeliverRequest 
+    - multipart/related 에 대한 처리, TODO:
+    - contentType 에 대한 처리, TODO:
+    - model 에 mutlpart: 로 추가 여부, TODO:
