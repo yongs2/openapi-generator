@@ -18,7 +18,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -140,8 +139,9 @@ func parameterValueToString(obj interface{}, key string) string {
 	return fmt.Sprintf("%v", dataMap[key])
 }
 
-// parameterAddToQuery adds the provided object to the url query supporting deep object syntax
-func parameterAddToQuery(queryParams interface{}, keyPrefix string, obj interface{}, collectionType string) {
+// parameterAddToHeaderOrQuery adds the provided object to the request header or url query
+// supporting deep object syntax
+func parameterAddToHeaderOrQuery(headerOrQueryParams interface{}, keyPrefix string, obj interface{}, collectionType string) {
 	var v = reflect.ValueOf(obj)
 	var value = ""
 	if v == reflect.ValueOf(nil) {
@@ -151,23 +151,48 @@ func parameterAddToQuery(queryParams interface{}, keyPrefix string, obj interfac
 		case reflect.Invalid:
 			value = "invalid"
 
-		case reflect.Struct:
-			if t, ok := obj.(MappedNullable); ok {
-				dataMap, err := t.ToMap()
-				if err != nil {
+			case reflect.Struct:
+				if t,ok := obj.(MappedNullable); ok {
+					dataMap,err := t.ToMap()
+					if err != nil {
+						return
+					}
+					parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, dataMap, collectionType)
 					return
 				}
-				parameterAddToQuery(queryParams, keyPrefix, dataMap, collectionType)
+				if t, ok := obj.(time.Time); ok {
+					parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, t.Format(time.RFC3339), collectionType)
+					return
+				}
+				value = v.Type().String() + " value"
+			case reflect.Slice:
+				var indValue = reflect.ValueOf(obj)
+				if indValue == reflect.ValueOf(nil) {
+					return
+				}
+				var lenIndValue = indValue.Len()
+				for i:=0;i<lenIndValue;i++ {
+					var arrayValue = indValue.Index(i)
+					parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, arrayValue.Interface(), collectionType)
+				}
 				return
-			}
-			if t, ok := obj.(time.Time); ok {
-				parameterAddToQuery(queryParams, keyPrefix, t.Format(time.RFC3339), collectionType)
+
+			case reflect.Map:
+				var indValue = reflect.ValueOf(obj)
+				if indValue == reflect.ValueOf(nil) {
+					return
+				}
+				iter := indValue.MapRange()
+				for iter.Next() {
+					k,v := iter.Key(), iter.Value()
+					parameterAddToHeaderOrQuery(headerOrQueryParams, fmt.Sprintf("%s[%s]", keyPrefix, k.String()), v.Interface(), collectionType)
+				}
 				return
-			}
-			value = v.Type().String() + " value"
-		case reflect.Slice:
-			var indValue = reflect.ValueOf(obj)
-			if indValue == reflect.ValueOf(nil) {
+
+			case reflect.Interface:
+				fallthrough
+			case reflect.Ptr:
+				parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, v.Elem().Interface(), collectionType)
 				return
 			}
 			var lenIndValue = indValue.Len()
@@ -212,13 +237,17 @@ func parameterAddToQuery(queryParams interface{}, keyPrefix string, obj interfac
 		}
 	}
 
-	switch valuesMap := queryParams.(type) {
-	case url.Values:
-		valuesMap.Add(keyPrefix, value)
-		break
-	case map[string]string:
-		valuesMap[keyPrefix] = value
-		break
+	switch valuesMap := headerOrQueryParams.(type) {
+		case url.Values:
+			if collectionType == "csv" && valuesMap.Get(keyPrefix) != "" {
+				valuesMap.Set(keyPrefix, valuesMap.Get(keyPrefix) + "," + value)
+			} else {
+				valuesMap.Add(keyPrefix, value)
+			}
+			break
+		case map[string]string:
+			valuesMap[keyPrefix] = value
+			break
 	}
 }
 
@@ -422,7 +451,7 @@ func (c *APIClient) decode(v interface{}, b []byte, contentType string) (err err
 		return nil
 	}
 	if f, ok := v.(*os.File); ok {
-		f, err = ioutil.TempFile("", "HttpClientFile")
+		f, err = os.CreateTemp("", "HttpClientFile")
 		if err != nil {
 			return
 		}
@@ -434,7 +463,7 @@ func (c *APIClient) decode(v interface{}, b []byte, contentType string) (err err
 		return
 	}
 	if f, ok := v.(**os.File); ok {
-		*f, err = ioutil.TempFile("", "HttpClientFile")
+		*f, err = os.CreateTemp("", "HttpClientFile")
 		if err != nil {
 			return
 		}

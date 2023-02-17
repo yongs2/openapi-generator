@@ -308,15 +308,15 @@ public class ModelUtils {
 
     /**
      * Invoke the specified visitor function for every schema that matches mimeType in the OpenAPI document.
-     *
+     * <p>
      * To avoid infinite recursion, referenced schemas are visited only once. When a referenced schema is visited,
      * it is added to visitedSchemas.
      *
-     * @param openAPI the OpenAPI document that contains schema objects.
-     * @param schema the root schema object to be visited.
-     * @param mimeType the mime type. TODO: does not seem to be used in a meaningful way.
+     * @param openAPI        the OpenAPI document that contains schema objects.
+     * @param schema         the root schema object to be visited.
+     * @param mimeType       the mime type. TODO: does not seem to be used in a meaningful way.
      * @param visitedSchemas the list of referenced schemas that have been visited.
-     * @param visitor the visitor function which is invoked for every visited schema.
+     * @param visitor        the visitor function which is invoked for every visited schema.
      */
     private static void visitSchema(OpenAPI openAPI, Schema schema, String mimeType, List<String> visitedSchemas, OpenAPISchemaVisitor visitor) {
         visitor.visit(schema, mimeType);
@@ -426,13 +426,14 @@ public class ModelUtils {
 
     /**
      * Return true if the specified schema is an object with a fixed number of properties.
-     *
+     * <p>
      * A ObjectSchema differs from a MapSchema in the following way:
      * - An ObjectSchema is not extensible, i.e. it has a fixed number of properties.
      * - A MapSchema is an object that can be extended with an arbitrary set of properties.
      *   The payload may include dynamic properties.
-     *
+     * <p>
      * For example, an OpenAPI schema is considered an ObjectSchema in the following scenarios:
+     * <p>
      *
      *   type: object
      *   additionalProperties: false
@@ -522,19 +523,57 @@ public class ModelUtils {
     }
 
     /**
+     * Return true if the specified schema is composed with more than one of the following:
+     * 'oneOf', 'anyOf' or 'allOf'.
+     *
+     * @param schema the OAS schema
+     * @return true if the specified schema is a Composed schema.
+     */
+    public static boolean isComplexComposedSchema(Schema schema) {
+        if (!(schema instanceof ComposedSchema)) {
+            return false;
+        }
+
+        int count = 0;
+
+        if (schema.getAllOf() != null && !schema.getAllOf().isEmpty()) {
+            count++;
+        }
+
+        if (schema.getOneOf() != null && !schema.getOneOf().isEmpty()) {
+            count++;
+        }
+
+        if (schema.getAnyOf() != null && !schema.getAnyOf().isEmpty()) {
+            count++;
+        }
+
+        if (schema.getProperties() != null && !schema.getProperties().isEmpty()) {
+            count++;
+        }
+
+        if (count > 1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Return true if the specified 'schema' is an object that can be extended with additional properties.
      * Additional properties means a Schema should support all explicitly defined properties plus any
      * undeclared properties.
-     *
+     * <p>
      * A MapSchema differs from an ObjectSchema in the following way:
      * - An ObjectSchema is not extensible, i.e. it has a fixed number of properties.
      * - A MapSchema is an object that can be extended with an arbitrary set of properties.
-     *   The payload may include dynamic properties.
-     *
+     * The payload may include dynamic properties.
+     * <p>
      * Note that isMapSchema returns true for a composed schema (allOf, anyOf, oneOf) that also defines
      * additionalproperties.
-     *
+     * <p>
      * For example, an OpenAPI schema is considered a MapSchema in the following scenarios:
+     * <p>
      *
      *   type: object
      *   additionalProperties: true
@@ -818,14 +857,14 @@ public class ModelUtils {
 
     /**
      * Check to see if the schema is a free form object.
-     *
+     * <p>
      * A free form object is an object (i.e. 'type: object' in a OAS document) that:
      * 1) Does not define properties, and
      * 2) Is not a composed schema (no anyOf, oneOf, allOf), and
      * 3) additionalproperties is not defined, or additionalproperties: true, or additionalproperties: {}.
-     *
+     * <p>
      * Examples:
-     *
+     * <p>
      * components:
      *   schemas:
      *     arbitraryObject:
@@ -844,7 +883,7 @@ public class ModelUtils {
      *         The value can be any type except the 'null' value.
      *
      * @param openAPI the object that encapsulates the OAS document.
-     * @param schema potentially containing a '$ref'
+     * @param schema  potentially containing a '$ref'
      * @return true if it's a free-form object
      */
     public static boolean isFreeFormObject(OpenAPI openAPI, Schema schema) {
@@ -1103,10 +1142,10 @@ public class ModelUtils {
 
     /**
      * Return the first Schema from a specified OAS 'content' section.
-     *
+     * <p>
      * For example, given the following OAS, this method returns the schema
      * for the 'application/json' content type because it is listed first in the OAS.
-     *
+     * <p>
      * responses:
      *   '200':
      *     content:
@@ -1157,8 +1196,8 @@ public class ModelUtils {
     /**
      * Has self reference?
      *
-     * @param openAPI OpenAPI spec.
-     * @param schema  Schema
+     * @param openAPI            OpenAPI spec.
+     * @param schema             Schema
      * @param visitedSchemaNames A set of visited schema names
      * @return boolean true if it has at least one self reference
      */
@@ -1315,7 +1354,7 @@ public class ModelUtils {
 
     /**
      * Returns the additionalProperties Schema for the specified input schema.
-     *
+     * <p>
      * The additionalProperties keyword is used to control the handling of additional, undeclared
      * properties, that is, properties whose names are not listed in the properties keyword.
      * The additionalProperties keyword may be either a boolean or an object.
@@ -1325,9 +1364,9 @@ public class ModelUtils {
      * to the boolean value True or setting additionalProperties: {}
      *
      * @param openAPI the object that encapsulates the OAS document.
-     * @param schema the input schema that may or may not have the additionalProperties keyword.
+     * @param schema  the input schema that may or may not have the additionalProperties keyword.
      * @return the Schema of the additionalProperties. The null value is returned if no additional
-     *         properties are allowed.
+     * properties are allowed.
      */
     public static Schema getAdditionalProperties(OpenAPI openAPI, Schema schema) {
         Object addProps = schema.getAdditionalProperties();
@@ -1438,10 +1477,10 @@ public class ModelUtils {
      * that specify a determinator.
      * If there are multiple elements in the composed schema and it is not clear
      * which one should be the parent, return null.
-     *
+     * <p>
      * For example, given the following OAS spec, the parent of 'Dog' is Animal
      * because 'Animal' specifies a discriminator.
-     *
+     * <p>
      * animal:
      *   type: object
      *   discriminator:
@@ -1449,6 +1488,7 @@ public class ModelUtils {
      *   properties:
      *     type: string
      *
+     * <p>
      * dog:
      *   allOf:
      *      - $ref: '#/components/schemas/animal'
@@ -1476,10 +1516,10 @@ public class ModelUtils {
                         LOGGER.error("Failed to obtain schema from {}", parentName);
                         return "UNKNOWN_PARENT_NAME";
                     } else if (hasOrInheritsDiscriminator(s, allSchemas)) {
-                        // discriminator.propertyName is used
+                        // discriminator.propertyName is used or x-parent is used
                         return parentName;
                     } else {
-                        // not a parent since discriminator.propertyName is not set
+                        // not a parent since discriminator.propertyName or x-parent is not set
                         hasAmbiguousParents = true;
                         refedWithoutDiscriminator.add(parentName);
                     }
@@ -1534,7 +1574,7 @@ public class ModelUtils {
                         LOGGER.error("Failed to obtain schema from {}", parentName);
                         names.add("UNKNOWN_PARENT_NAME");
                     } else if (hasOrInheritsDiscriminator(s, allSchemas)) {
-                        // discriminator.propertyName is used
+                        // discriminator.propertyName is used or x-parent is used
                         names.add(parentName);
                         if (includeAncestors && s instanceof ComposedSchema) {
                             names.addAll(getAllParentsName((ComposedSchema) s, allSchemas, true));
@@ -1559,7 +1599,8 @@ public class ModelUtils {
     }
 
     private static boolean hasOrInheritsDiscriminator(Schema schema, Map<String, Schema> allSchemas) {
-        if (schema.getDiscriminator() != null && StringUtils.isNotEmpty(schema.getDiscriminator().getPropertyName())) {
+        if ((schema.getDiscriminator() != null && StringUtils.isNotEmpty(schema.getDiscriminator().getPropertyName()))
+                || (isExtensionParent(schema))) { // x-parent is used
             return true;
         } else if (StringUtils.isNotEmpty(schema.get$ref())) {
             String parentName = getSimpleRef(schema.get$ref());
@@ -1582,17 +1623,42 @@ public class ModelUtils {
     }
 
     /**
+     * If it's a boolean, returns the value of the extension `x-parent`.
+     * If it's string, return true if it's non-empty.
+     * If the return value is `true`, the schema is a parent.
+     *
+     * @param schema    Schema
+     * @return boolean
+     */
+    public static boolean isExtensionParent(Schema schema) {
+        if (schema.getExtensions() == null) {
+            return false;
+        } else {
+            Object xParent = schema.getExtensions().get("x-parent");
+            if (xParent == null) {
+                return false;
+            } else if (xParent instanceof Boolean) {
+                return (Boolean) xParent;
+            } else if (xParent instanceof String) {
+                return StringUtils.isNotEmpty((String) xParent);
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
      * Return true if the 'nullable' attribute is set to true in the schema, i.e. if the value
      * of the property can be the null value.
-     *
+     * <p>
      * In addition, if the OAS document is 3.1 or above, isNullable returns true if the input
      * schema is a 'oneOf' composed document with at most two children, and one of the children
      * is the 'null' type.
-     *
+     * <p>
      * The caller is responsible for resolving schema references before invoking isNullable.
      * If the input schema is a $ref and the referenced schema has 'nullable: true', this method
      * returns false (because the nullable attribute is defined in the referenced schema).
-     *
+     * <p>
      * The 'nullable' attribute was introduced in OAS 3.0.
      * The 'nullable' attribute is deprecated in OAS 3.1. In a OAS 3.1 document, the preferred way
      * to specify nullable properties is to use the 'null' type.
@@ -1622,11 +1688,11 @@ public class ModelUtils {
     /**
      * Return true if the specified composed schema is 'oneOf', contains one or two elements,
      * and at least one of the elements is the 'null' type.
-     *
+     * <p>
      * The 'null' type is supported in OAS 3.1 and above.
      * In the example below, the 'OptionalOrder' can have the null value because the 'null'
      * type is one of the elements under 'oneOf'.
-     *
+     * <p>
      * OptionalOrder:
      *   oneOf:
      *     - type: 'null'
@@ -1649,13 +1715,13 @@ public class ModelUtils {
 
     /**
      * isNullType returns true if the input schema is the 'null' type.
-     *
+     * <p>
      * The 'null' type is supported in OAS 3.1 and above. It is not supported
      * in OAS 2.0 and OAS 3.0.x.
-     *
+     * <p>
      * For example, the "null" type could be used to specify that a value must
      * either be null or a specified type:
-     *
+     * <p>
      * OptionalOrder:
      *   oneOf:
      *     - type: 'null'
@@ -1675,6 +1741,7 @@ public class ModelUtils {
      * For when a type is not defined on a schema
      * Note: properties, additionalProperties, enums, validations, items, and composed schemas (oneOf/anyOf/allOf)
      * can be defined or omitted on these any type schemas
+     *
      * @param schema the schema that we are checking
      * @return boolean
      */
@@ -1779,7 +1846,7 @@ public class ModelUtils {
 
     private static ObjectMapper getRightMapper(String data) {
         ObjectMapper mapper;
-        if  (data.trim().startsWith("{")) {
+        if (data.trim().startsWith("{")) {
             mapper = JSON_MAPPER;
         } else {
             mapper = YAML_MAPPER;
@@ -1791,11 +1858,9 @@ public class ModelUtils {
      * Parse and return a JsonNode representation of the input OAS document.
      *
      * @param location the URL of the OAS document.
-     * @param auths the list of authorization values to access the remote URL.
-     *
-     * @throws java.lang.Exception if an error occurs while retrieving the OpenAPI document.
-     *
+     * @param auths    the list of authorization values to access the remote URL.
      * @return A JsonNode representation of the input OAS document.
+     * @throws java.lang.Exception if an error occurs while retrieving the OpenAPI document.
      */
     public static JsonNode readWithInfo(String location, List<AuthorizationValue> auths) throws Exception {
         String data;
@@ -1822,14 +1887,13 @@ public class ModelUtils {
     /**
      * Parse the OAS document at the specified location, get the swagger or openapi version
      * as specified in the source document, and return the version.
-     *
+     * <p>
      * For OAS 2.0 documents, return the value of the 'swagger' attribute.
      * For OAS 3.x documents, return the value of the 'openapi' attribute.
      *
-     * @param openAPI the object that encapsulates the OAS document.
+     * @param openAPI  the object that encapsulates the OAS document.
      * @param location the URL of the OAS document.
-     * @param auths the list of authorization values to access the remote URL.
-     *
+     * @param auths    the list of authorization values to access the remote URL.
      * @return the version of the OpenAPI document.
      */
     public static SemVer getOpenApiVersion(OpenAPI openAPI, String location, List<AuthorizationValue> auths) {
