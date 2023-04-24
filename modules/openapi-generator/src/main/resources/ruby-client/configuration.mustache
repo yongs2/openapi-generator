@@ -59,6 +59,11 @@ module {{moduleName}}
     # @return [Proc]
     attr_accessor :access_token_getter
 
+    # Set this to return data as binary instead of downloading a temp file. When enabled (set to true)
+    # HTTP responses with return type `File` will be returned as a stream of binary data.
+    # Default to false.
+    attr_accessor :return_binary_data
+
     # Set this to enable/disable debugging. When enabled (set to true), HTTP request/response
     # details will be logged with `logger.debug` (see the `logger` attribute).
     # Default to false.
@@ -166,7 +171,7 @@ module {{moduleName}}
 
     # Returns base URL for specified operation based on server settings
     def base_url(operation = nil)
-      index = server_operation_index.fetch(operation, server_index)
+      index = server_operation_index[operation]
       return "#{scheme}://#{[host, base_path].join('/').gsub(/\/+/, '/')}".sub(/\/+\z/, '') if index == nil
 
       server_url(index, server_operation_variables.fetch(operation, server_variables), operation_server_settings[operation])

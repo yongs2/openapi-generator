@@ -161,6 +161,11 @@ class ModelTests(unittest.TestCase):
         p = petstore_api.Pig.from_json(json_str)
         self.assertIsInstance(p.actual_instance, petstore_api.BasquePig)
 
+        # test from_dict
+        json_dict = {"className": "BasquePig", "color": "red"}
+        p = petstore_api.Pig.from_dict(json_dict)
+        self.assertIsInstance(p.actual_instance, petstore_api.BasquePig)
+
         # test init
         basque_pig = p.actual_instance
         pig2 = petstore_api.Pig(actual_instance=basque_pig)
@@ -181,7 +186,7 @@ class ModelTests(unittest.TestCase):
             self.assertTrue(False)  # this line shouldn't execute
         except AttributeError as e:
             self.assertEqual(str(e), "'int' object has no attribute 'get'")
-        # comment out below as the error message is different using oneOf discriminator looku option
+        # comment out below as the error message is different using oneOf discriminator lookup option
         #except ValueError as e:
         #    error_message = (
         #        "No match found when deserializing the JSON string into Pig with oneOf schemas: BasquePig, DanishPig. "
@@ -212,6 +217,11 @@ class ModelTests(unittest.TestCase):
         # test from_json
         json_str = '{"className": "BasquePig", "color": "red"}'
         p = petstore_api.AnyOfPig.from_json(json_str)
+        self.assertIsInstance(p.actual_instance, petstore_api.BasquePig)
+
+        # test from_dict
+        json_dict = {"className": "BasquePig", "color": "red"}
+        p = petstore_api.AnyOfPig.from_dict(json_dict)
         self.assertIsInstance(p.actual_instance, petstore_api.BasquePig)
 
         # test init
@@ -279,7 +289,7 @@ class ModelTests(unittest.TestCase):
         # test enum ref property
         # test to_json
         d = petstore_api.OuterObjectWithEnumProperty(value=petstore_api.OuterEnumInteger.NUMBER_1)
-        self.assertEqual(d.to_json(), '{"value": 1, "str_value": null}')
+        self.assertEqual(d.to_json(), '{"value": 1}')
         d2 = petstore_api.OuterObjectWithEnumProperty(value=petstore_api.OuterEnumInteger.NUMBER_1, str_value=petstore_api.OuterEnum.DELIVERED)
         self.assertEqual(d2.to_json(), '{"str_value": "delivered", "value": 1}')
         # test from_json (round trip)
@@ -287,6 +297,13 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(d3.str_value, petstore_api.OuterEnum.DELIVERED)
         self.assertEqual(d3.value, petstore_api.OuterEnumInteger.NUMBER_1)
         self.assertEqual(d3.to_json(), '{"str_value": "delivered", "value": 1}')
+        d4 = petstore_api.OuterObjectWithEnumProperty(value=petstore_api.OuterEnumInteger.NUMBER_1, str_value=None)
+        self.assertEqual(d4.to_json(), '{"value": 1, "str_value": null}')
+        d5 = petstore_api.OuterObjectWithEnumProperty(value=petstore_api.OuterEnumInteger.NUMBER_1)
+        self.assertEqual(d5.__fields_set__, {'value'})
+        d5.str_value = None # set None explicitly
+        self.assertEqual(d5.__fields_set__, {'value', 'str_value'})
+        self.assertEqual(d5.to_json(), '{"value": 1, "str_value": null}')
 
     def test_valdiator(self):
         # test regular expression
@@ -296,6 +313,10 @@ class ModelTests(unittest.TestCase):
             self.assertTrue(False) # this line shouldn't execute
         except ValueError as e:
             self.assertTrue(r"must validate the regular expression /^image_\d{1,3}$/i" in str(e))
+
+        # test None with optional string (with regualr expression)
+        a = petstore_api.FormatTest(number=123.45, byte=bytes("string", 'utf-8'), date="2013-09-17", password="testing09876")
+        a.string = None # shouldn't throw an exception
 
         a.pattern_with_digits_and_delimiter = "IMAGE_123"
         self.assertEqual(a.pattern_with_digits_and_delimiter, "IMAGE_123")
@@ -309,7 +330,7 @@ class ModelTests(unittest.TestCase):
             self.pet.status = "error"
             self.assertTrue(False) # this line shouldn't execute
         except ValueError as e:
-            self.assertTrue("must validate the enum values ('available', 'pending', 'sold')" in str(e))
+            self.assertTrue("must be one of enum values ('available', 'pending', 'sold')" in str(e))
 
     def test_object_id(self):
         pet_ap = petstore_api.Pet(name="test name", photo_urls=["string"])
@@ -372,3 +393,29 @@ class ModelTests(unittest.TestCase):
         ## Serializing json  
         #json_object = json.dumps(dictionary) 
         #self.assertEqual(json_object, "")
+
+    def test_inline_enum_default(self):
+        enum_test = petstore_api.EnumTest(enum_string_required="lower")
+        self.assertEqual(enum_test.enum_integer_default, 5)
+
+    def test_object_with_optional_dict(self):
+        # for https://github.com/OpenAPITools/openapi-generator/issues/14913
+        # shouldn't throw exception by the optional dict property
+        a = petstore_api.ParentWithOptionalDict.from_dict({})
+        self.assertFalse(a is None)
+
+        b = petstore_api.ParentWithOptionalDict.from_dict({"optionalDict": {"key": {"aProperty": {"a": "b"}}}})
+        self.assertFalse(b is None)
+        self.assertEqual(b.optional_dict["key"].a_property["a"], "b")
+
+    def test_object_with_dict_of_dict_of_object(self):
+        # for https://github.com/OpenAPITools/openapi-generator/issues/15135
+        d = {"optionalDict": {"a": {"b": {"aProperty": "value"}}}}
+        a = petstore_api.Parent.from_dict(d)
+        self.assertEqual(a.to_dict(), d)
+
+    def test_eum_class(self):
+        a = petstore_api.EnumClass("-efg")
+        self.assertEqual(a.value, "-efg")
+        self.assertEqual(a.name, "MINUS_EFG")
+        self.assertEqual(a, "-efg")

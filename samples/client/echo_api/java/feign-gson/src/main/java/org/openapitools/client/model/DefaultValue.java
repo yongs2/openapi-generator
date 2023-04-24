@@ -98,11 +98,15 @@ public class DefaultValue {
 
   public static final String SERIALIZED_NAME_ARRAY_STRING = "array_string";
   @SerializedName(SERIALIZED_NAME_ARRAY_STRING)
-  private List<String> arrayString = new ArrayList<>();
+  private List<String> arrayString;
 
   public static final String SERIALIZED_NAME_ARRAY_STRING_NULLABLE = "array_string_nullable";
   @SerializedName(SERIALIZED_NAME_ARRAY_STRING_NULLABLE)
   private List<String> arrayStringNullable;
+
+  public static final String SERIALIZED_NAME_ARRAY_STRING_EXTENSION_NULLABLE = "array_string_extension_nullable";
+  @SerializedName(SERIALIZED_NAME_ARRAY_STRING_EXTENSION_NULLABLE)
+  private List<String> arrayStringExtensionNullable;
 
   public static final String SERIALIZED_NAME_STRING_NULLABLE = "string_nullable";
   @SerializedName(SERIALIZED_NAME_STRING_NULLABLE)
@@ -268,6 +272,9 @@ public class DefaultValue {
   }
 
   public DefaultValue addArrayStringNullableItem(String arrayStringNullableItem) {
+    if (this.arrayStringNullable == null) {
+      this.arrayStringNullable = new ArrayList<>();
+    }
     this.arrayStringNullable.add(arrayStringNullableItem);
     return this;
   }
@@ -285,6 +292,36 @@ public class DefaultValue {
 
   public void setArrayStringNullable(List<String> arrayStringNullable) {
     this.arrayStringNullable = arrayStringNullable;
+  }
+
+
+  public DefaultValue arrayStringExtensionNullable(List<String> arrayStringExtensionNullable) {
+    
+    this.arrayStringExtensionNullable = arrayStringExtensionNullable;
+    return this;
+  }
+
+  public DefaultValue addArrayStringExtensionNullableItem(String arrayStringExtensionNullableItem) {
+    if (this.arrayStringExtensionNullable == null) {
+      this.arrayStringExtensionNullable = new ArrayList<>();
+    }
+    this.arrayStringExtensionNullable.add(arrayStringExtensionNullableItem);
+    return this;
+  }
+
+   /**
+   * Get arrayStringExtensionNullable
+   * @return arrayStringExtensionNullable
+  **/
+  @javax.annotation.Nullable
+
+  public List<String> getArrayStringExtensionNullable() {
+    return arrayStringExtensionNullable;
+  }
+
+
+  public void setArrayStringExtensionNullable(List<String> arrayStringExtensionNullable) {
+    this.arrayStringExtensionNullable = arrayStringExtensionNullable;
   }
 
 
@@ -309,7 +346,6 @@ public class DefaultValue {
     this.stringNullable = stringNullable;
   }
 
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -325,6 +361,7 @@ public class DefaultValue {
         Objects.equals(this.arrayIntegerDefault, defaultValue.arrayIntegerDefault) &&
         Objects.equals(this.arrayString, defaultValue.arrayString) &&
         Objects.equals(this.arrayStringNullable, defaultValue.arrayStringNullable) &&
+        Objects.equals(this.arrayStringExtensionNullable, defaultValue.arrayStringExtensionNullable) &&
         Objects.equals(this.stringNullable, defaultValue.stringNullable);
   }
 
@@ -334,7 +371,7 @@ public class DefaultValue {
 
   @Override
   public int hashCode() {
-    return Objects.hash(arrayStringEnumRefDefault, arrayStringEnumDefault, arrayStringDefault, arrayIntegerDefault, arrayString, arrayStringNullable, stringNullable);
+    return Objects.hash(arrayStringEnumRefDefault, arrayStringEnumDefault, arrayStringDefault, arrayIntegerDefault, arrayString, arrayStringNullable, arrayStringExtensionNullable, stringNullable);
   }
 
   private static <T> int hashCodeNullable(JsonNullable<T> a) {
@@ -354,6 +391,7 @@ public class DefaultValue {
     sb.append("    arrayIntegerDefault: ").append(toIndentedString(arrayIntegerDefault)).append("\n");
     sb.append("    arrayString: ").append(toIndentedString(arrayString)).append("\n");
     sb.append("    arrayStringNullable: ").append(toIndentedString(arrayStringNullable)).append("\n");
+    sb.append("    arrayStringExtensionNullable: ").append(toIndentedString(arrayStringExtensionNullable)).append("\n");
     sb.append("    stringNullable: ").append(toIndentedString(stringNullable)).append("\n");
     sb.append("}");
     return sb.toString();
