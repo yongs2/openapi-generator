@@ -50,3 +50,7 @@ git push origin master
 
 - upstream 의 Commits on Feb 21, 2023 까지 반영
 - ParameterAddToHeaderOrQuery 확인은 udr_ad/client/api_influence_data_store.go
+
+### 2023/04/24
+
+- upstream 의 Commits on Apr 22, 2023 까지 반영
