@@ -3076,7 +3076,7 @@ LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})-m.isAlias[{}]", name
         m.setDiscriminator(createDiscriminator(name, schema, this.openAPI));
 LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})-2", name, 3);
         if (!this.getLegacyDiscriminatorBehavior()) {
-            m.addDiscriminatorMappedModelsImports();
+            m.addDiscriminatorMappedModelsImports(!(this instanceof PythonClientCodegen));
 LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})-3", name, 3);
         }
 
