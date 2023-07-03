@@ -573,6 +573,11 @@ public class ModelUtils {
      * @return true if the specified schema is a Map schema.
      */
     public static boolean isMapSchema(Schema schema) {
+        // additionalProperties explicitly set to false
+        if (schema.getAdditionalProperties() instanceof Boolean && Boolean.FALSE.equals(schema.getAdditionalProperties())) {
+            return false;
+        }
+
         return (schema instanceof MapSchema) ||
                 (schema.getAdditionalProperties() instanceof Schema) ||
                 (schema.getAdditionalProperties() instanceof Boolean && (Boolean) schema.getAdditionalProperties());
@@ -1505,7 +1510,7 @@ public class ModelUtils {
      * @return boolean
      */
     public static boolean isExtensionParent(Schema schema) {
-        if (schema.getExtensions() == null) {
+        if (schema == null || schema.getExtensions() == null) {
             return false;
         }
 
@@ -1963,6 +1968,26 @@ public class ModelUtils {
                 schema.getMinItems() != null || schema.getMaxItems() != null ||
                 schema.getReadOnly() != null || schema.getWriteOnly() != null ||
                 schema.getPattern() != null) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if the schema is a parent (with discriminator).
+     *
+     * @param schema the schema.
+     *
+     * @return true if the schema is a parent.
+     */
+    public static boolean isParent(Schema schema) {
+        if (schema != null && schema.getDiscriminator() != null) {
+            return true;
+        }
+
+        // if x-parent is set
+        if (isExtensionParent(schema)) {
             return true;
         }
 
