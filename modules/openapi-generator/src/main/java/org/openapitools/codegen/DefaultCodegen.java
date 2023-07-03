@@ -3125,12 +3125,6 @@ LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})-1,typeAliases[{}]", 
                 || isAliasOfSimpleTypes(schema)); // check if the unaliased schema is an alias of simple OAS types
 LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})-m.isAlias[{}]", name, 3, m.isAlias);
         m.setDiscriminator(createDiscriminator(name, schema, this.openAPI));
-LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})-2", name, 3);
-        if (!this.getLegacyDiscriminatorBehavior()) {
-            m.addDiscriminatorMappedModelsImports(!(this instanceof PythonClientCodegen));
-LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})-3", name, 3);
-        }
-
 LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({})", name, 4);
         if (schema.getDeprecated() != null) {
             m.isDeprecated = schema.getDeprecated();
@@ -3239,10 +3233,6 @@ LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({}),m.allVars[{}]", name
             for (CodegenProperty prop : m.allVars) {
                 postProcessModelProperty(m, prop);
             }
-        }
-LOGGER.info(">> FIXME << fromModel(Name({}), CheckPoint({}),addSchemaImportsFromV3SpecLocations[{}]", name, 12, addSchemaImportsFromV3SpecLocations);
-        if (addSchemaImportsFromV3SpecLocations) {
-            addImports(m.imports, m.getImports(importContainerType, importBaseType, generatorMetadata.getFeatureSet()));
         }
         LOGGER.info(">> FIXME << fromModel(Name({}) DONE,m.allOf[{}] <<<<<", name, m.allOf.size());
         return m;
