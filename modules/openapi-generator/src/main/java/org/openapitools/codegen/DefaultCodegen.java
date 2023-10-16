@@ -2302,10 +2302,7 @@ public class DefaultCodegen implements CodegenConfig {
             // add the type of each child to the list of names.
             for (Schema s : schemas) {
                 if ( (getSingleSchemaType(s) == "object") // FIXME: allOf-pattern 에 대해 예외처리
-                    && (s.getType() == null) 
-                    && (s.get$ref() == null)
-                    && (s.getProperties() == null)
-                    && (s.getAdditionalProperties() == null) ) {
+                    && (checkExceptionForAllOfPattern(s)) ) {
         LOGGER.info(">> FIXME << getSchemaType.Title[{}],Type[{}],$ref[{}],Pp[{}],App[{}],getSingleSchemaType=[{}],EXCEPTION", s.getTitle(), s.getType(), s.get$ref(), s.getProperties(), s.getAdditionalProperties(), getSingleSchemaType(s));
                     return getSingleSchemaType(schema);
                 }
@@ -2730,11 +2727,8 @@ public class DefaultCodegen implements CodegenConfig {
                 int modelImplCnt = 0; // only one inline object allowed in a ComposedModel
                 int modelDiscriminators = 0; // only one discriminator allowed in a ComposedModel
                 for (Object innerSchema : composed.getAllOf()) { // TODO need to work with anyOf, oneOf as well
-                    if ( (innerSchema.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
-                        && (innerSchema.get$ref() == null)
-                        && (innerSchema.getProperties() == null)
-                        && (innerSchema.getAdditionalProperties() == null) ) {
-        LOGGER.info(">> FIXME << updateModelForComposedSchema.Pattern[{}],Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", innerSchema.getPattern(), innerSchema.getType(), innerSchema.get$ref(), innerSchema.getProperties(), innerSchema.getAdditionalProperties());
+                    if (checkExceptionForAllOfPattern((Schema)innerSchema)) { // FIXME: allOf-pattern 에 대한 예외처리
+                        LOGGER.info(">> FIXME << updateModelForComposedSchema.allOf,EXCEPTION");
                         continue;
                     }
                     if (m.discriminator == null && ((Schema) innerSchema).getDiscriminator() != null) {
@@ -2770,11 +2764,8 @@ public class DefaultCodegen implements CodegenConfig {
             for (Schema interfaceSchema : interfaces) {
                 interfaceSchema = unaliasSchema(interfaceSchema);
                 LOGGER.info(">> FIXME << updateModelForComposedSchema,03.interfaceSchema.ref[{}],required[{}],type[{}]", interfaceSchema.get$ref(), interfaceSchema.getRequired(), interfaceSchema.getType());
-                if ( (interfaceSchema.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
-                    && (interfaceSchema.get$ref() == null)
-                    && (interfaceSchema.getProperties() == null)
-                    && (interfaceSchema.getAdditionalProperties() == null) ) {
-                    LOGGER.info(">> FIXME << updateModelForComposedSchema.Pattern[{}],Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", interfaceSchema.getPattern(), interfaceSchema.getType(), interfaceSchema.get$ref(), interfaceSchema.getProperties(), interfaceSchema.getAdditionalProperties());
+                if (checkExceptionForAllOfPattern(interfaceSchema)) { // FIXME: allOf-pattern 에 대한 예외처리
+                    LOGGER.info(">> FIXME << updateModelForComposedSchema.allOf,EXCEPTION");
                     continue;
                 }
 
@@ -2791,50 +2782,26 @@ public class DefaultCodegen implements CodegenConfig {
                     }
 
                     if (composed.getAnyOf() != null) {
+                    LOGGER.info(">> FIXME << updateModelForComposedSchema,05.composed.getAnyOf()=[{}],m.anyOf.contains({}})=[{}]", composed.getAnyOf(), languageType, m.anyOf.contains(languageType));
                         if (m.anyOf.contains(languageType)) {
-                            LOGGER.debug("{} (anyOf schema) already has `{}` defined and therefore it's skipped.", m.name, languageType);
+                            LOGGER.warn("{} (anyOf schema) already has `{}` defined and therefore it's skipped.", m.name, languageType);
                         } else {
                             m.anyOf.add(languageType);
-
                         }
                     } else if (composed.getOneOf() != null) {
+                    LOGGER.info(">> FIXME << updateModelForComposedSchema,07.composed.getOneOf()=[{}],m.oneOf.contains({}})=[{}]", composed.getOneOf(), languageType, m.oneOf.contains(languageType));
                         if (m.oneOf.contains(languageType)) {
-                            LOGGER.debug("{} (oneOf schema) already has `{}` defined and therefore it's skipped.", m.name, languageType);
+                            LOGGER.warn("{} (oneOf schema) already has `{}` defined and therefore it's skipped.", m.name, languageType);
                         } else {
                             m.oneOf.add(languageType);
                         }
                     } else if (composed.getAllOf() != null) {
+                    LOGGER.info(">> FIXME << updateModelForComposedSchema,09.composed.getAllOf()=[{}]", composed.getAllOf());
                         // no need to add primitive type to allOf, which should comprise of schemas (models) only
                     } else {
-                        if (ModelUtils.isArraySchema(interfaceSchema) || ModelUtils.isMapSchema(interfaceSchema)) {
-                            while (interfaceProperty != null) {
-                                addImport(m, interfaceProperty.complexType);
-                                interfaceProperty = interfaceProperty.items;
-                            }
-                        }
-
-                        if (composed.getAnyOf() != null) {
-                    LOGGER.info(">> FIXME << updateModelForComposedSchema,05.composed.getAnyOf()=[{}],m.anyOf.contains({}})=[{}]", composed.getAnyOf(), languageType, m.anyOf.contains(languageType));
-                            if (m.anyOf.contains(languageType)) {
-                                LOGGER.warn("{} (anyOf schema) already has `{}` defined and therefore it's skipped.", m.name, languageType);
-                            } else {
-                                m.anyOf.add(languageType);
-                            }
-                        } else if (composed.getOneOf() != null) {
-                    LOGGER.info(">> FIXME << updateModelForComposedSchema,07.composed.getOneOf()=[{}],m.oneOf.contains({}})=[{}]", composed.getOneOf(), languageType, m.oneOf.contains(languageType));
-                            if (m.oneOf.contains(languageType)) {
-                                LOGGER.warn("{} (oneOf schema) already has `{}` defined and therefore it's skipped.", m.name, languageType);
-                            } else {
-                                m.oneOf.add(languageType);
-                            }
-                        } else if (composed.getAllOf() != null) {
-                    LOGGER.info(">> FIXME << updateModelForComposedSchema,09.composed.getAllOf()=[{}]", composed.getAllOf());
-                            // no need to add primitive type to allOf, which should comprise of schemas (models) only
-                        } else {
-                            LOGGER.error("Composed schema has incorrect anyOf, allOf, oneOf defined: {}", composed);
-                        }
-                        continue;
+                        LOGGER.error("Composed schema has incorrect anyOf, allOf, oneOf defined: {}", composed);
                     }
+                    continue;
                 }
 
                 // the rest of the section is for model
@@ -3415,6 +3382,19 @@ LOGGER.info(">> FIXME << discriminatorFound,composedSchemaName[{}]", composedSch
         return null;
     }
 
+    // FIXME: Check Exception for allof-pattern
+    private Boolean checkExceptionForAllOfPattern(Schema allOf) {
+        LOGGER.info(">> FIXME << allOf,Type[{}],$ref[{}],Pp[{}],App[{}], START >>>>>", allOf.getType(), allOf.get$ref(), allOf.getProperties(), allOf.getAdditionalProperties());
+        if ( (allOf.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
+            && (allOf.get$ref() == null)
+            && (allOf.getProperties() == null)
+            && (allOf.getAdditionalProperties() == null) ) {
+            LOGGER.info(">> FIXME << allOf,Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", allOf.getType(), allOf.get$ref(), allOf.getProperties(), allOf.getAdditionalProperties());
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Recursively look in Schema sc for the discriminator and return it
      *
@@ -3446,12 +3426,8 @@ LOGGER.info(">> FIXME << discriminatorFound,composedSchemaName[{}]", composedSch
             if (composedSchema.getAllOf() != null) {
                 // If our discriminator is in one of the allOf schemas break when we find it
                 for (Object allOf : composedSchema.getAllOf()) {
-                    LOGGER.info(">> FIXME << recursiveGetDiscriminator.allOf,Type[{}],$ref[{}],Pp[{}],App[{}], START >>>>>", allOf.getType(), allOf.get$ref(), allOf.getProperties(), allOf.getAdditionalProperties());
-                    if ( (allOf.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
-                        && (allOf.get$ref() == null)
-                        && (allOf.getProperties() == null)
-                        && (allOf.getAdditionalProperties() == null) ) {
-                        LOGGER.info(">> FIXME << recursiveGetDiscriminator.allOf,Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", allOf.getType(), allOf.get$ref(), allOf.getProperties(), allOf.getAdditionalProperties());
+                    if (checkExceptionForAllOfPattern((Schema) allOf)) {
+                        LOGGER.info(">> FIXME << recursiveGetDiscriminator.allOf,EXCEPTION");
                         continue;
                     }
                     foundDisc = recursiveGetDiscriminator((Schema) allOf, visitedSchemas);
@@ -8329,12 +8305,8 @@ LOGGER.info(">> FIXME << getComposedSchemas,schema[{}],ComposedSchema is NULL, s
         Set<String> dataTypeSet = new HashSet<>(); // to keep track of dataType
         int i = 0;
         for (Schema xOfSchema : xOfCollection) {
-            LOGGER.info(">> FIXME << getComposedProperties.I[{}],Title[{}],Type[{}],$ref[{}],Pp[{}],App[{}], START >>>>>", i, xOfSchema.getTitle(), xOfSchema.getType(), xOfSchema.get$ref(), xOfSchema.getProperties(), xOfSchema.getAdditionalProperties());
-            if ( (xOfSchema.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
-                && (xOfSchema.get$ref() == null)
-                && (xOfSchema.getProperties() == null)
-                && (xOfSchema.getAdditionalProperties() == null) ) {
-                LOGGER.info(">> FIXME << getComposedProperties.I[{}],Title[{}],Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", i, xOfSchema.getTitle(), xOfSchema.getType(), xOfSchema.get$ref(), xOfSchema.getProperties(), xOfSchema.getAdditionalProperties());
+            if (checkExceptionForAllOfPattern(xOfSchema)) { // FIXME: allOf-pattern 에 대한 예외처리
+                LOGGER.info(">> FIXME << getComposedProperties.allOf,EXCEPTION");
                 continue;
             }
             CodegenProperty cp = fromProperty(collectionName + "_" + i, xOfSchema, false);

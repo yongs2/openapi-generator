@@ -469,6 +469,53 @@ public class ModelUtils {
         // in 3.0, ComposeSchema is used for anyOf/oneOf/allOf
         // in 3.1, it's not the case so we need more checks below
         if (schema instanceof ComposedSchema) {
+            // FIXME: allOf-pattern 에 대해 예외처리
+            ComposedSchema composed = (ComposedSchema) schema; // FIXME: allOf-pattern 에 대해 예외처리
+            int modelImplCnt = 0; // only one inline object allowed in a ComposedModel
+            if (composed.getAllOf() != null) {
+                LOGGER.info(">> FIXME << isComposedSchema.getAllOf[{}]", (composed.getAllOf() != null));
+                for (Schema innerSchema : composed.getAllOf()) { // TODO need to work with anyOf, oneOf as well
+                    if ( (innerSchema.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
+                        && (innerSchema.get$ref() == null)
+                        && (innerSchema.getProperties() == null)
+                        && (innerSchema.getAdditionalProperties() == null) ) {
+                        LOGGER.info(">> FIXME << isComposedSchema.Pattern[{}],Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", innerSchema.getPattern(), innerSchema.getType(), innerSchema.get$ref(), innerSchema.getProperties(), innerSchema.getAdditionalProperties());
+                        continue;
+                    }
+                    modelImplCnt += 1;
+                }
+            }
+            if (composed.getAnyOf() != null) {
+                LOGGER.info(">> FIXME << isComposedSchema.getAnyOf[{}]", (composed.getAnyOf() != null));
+                for (Schema innerSchema : composed.getAnyOf()) { // TODO need to work with anyOf, oneOf as well
+                    if ( (innerSchema.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
+                        && (innerSchema.get$ref() == null)
+                        && (innerSchema.getProperties() == null)
+                        && (innerSchema.getAdditionalProperties() == null) ) {
+                        LOGGER.info(">> FIXME << isComposedSchema.Pattern[{}],Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", innerSchema.getPattern(), innerSchema.getType(), innerSchema.get$ref(), innerSchema.getProperties(), innerSchema.getAdditionalProperties());
+                        continue;
+                    }
+                    modelImplCnt += 1;
+                }
+            }
+            if (composed.getOneOf() != null) {
+                LOGGER.info(">> FIXME << isComposedSchema.getOneOf[{}]", (composed.getOneOf() != null));
+                for (Schema innerSchema : composed.getOneOf()) { // TODO need to work with anyOf, oneOf as well
+                    if ( (innerSchema.getType() == null)  // FIXME: allOf-pattern 에 대해 예외처리
+                        && (innerSchema.get$ref() == null)
+                        && (innerSchema.getProperties() == null)
+                        && (innerSchema.getAdditionalProperties() == null) ) {
+                        LOGGER.info(">> FIXME << isComposedSchema.Pattern[{}],Type[{}],$ref[{}],Pp[{}],App[{}],EXCEPTION", innerSchema.getPattern(), innerSchema.getType(), innerSchema.get$ref(), innerSchema.getProperties(), innerSchema.getAdditionalProperties());
+                        continue;
+                    }
+                    modelImplCnt += 1;
+                }
+            }
+            LOGGER.info(">> FIXME << isComposedSchema.modelImplCnt[{}]", modelImplCnt);
+            if (modelImplCnt <= 0) {
+                return false;
+            }
+
             return true;
         }
 
