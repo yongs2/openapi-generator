@@ -105,11 +105,10 @@ namespace Org.OpenAPITools.Model
         {
             // UuidWithPattern (Guid) pattern
             Regex regexUuidWithPattern = new Regex(@"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", RegexOptions.CultureInvariant);
-            if (false == regexUuidWithPattern.Match(this.UuidWithPattern.ToString()).Success)
+            if (!regexUuidWithPattern.Match(this.UuidWithPattern.ToString()).Success)
             {
                 yield return new System.ComponentModel.DataAnnotations.ValidationResult("Invalid value for UuidWithPattern, must match a pattern of " + regexUuidWithPattern, new [] { "UuidWithPattern" });
             }
-
             yield break;
         }
     }
@@ -156,10 +155,10 @@ namespace Org.OpenAPITools.Model
 
                 if (utf8JsonReader.TokenType == JsonTokenType.PropertyName && currentDepth == utf8JsonReader.CurrentDepth - 1)
                 {
-                    string? propertyName = utf8JsonReader.GetString();
+                    string? localVarJsonPropertyName = utf8JsonReader.GetString();
                     utf8JsonReader.Read();
 
-                    switch (propertyName)
+                    switch (localVarJsonPropertyName)
                     {
                         case "dateTime":
                             if (utf8JsonReader.TokenType != JsonTokenType.Null)
@@ -224,7 +223,8 @@ namespace Org.OpenAPITools.Model
         {
             writer.WriteString("dateTime", mixedPropertiesAndAdditionalPropertiesClass.DateTime.ToString(DateTimeFormat));
             writer.WritePropertyName("map");
-            JsonSerializer.Serialize(writer, mixedPropertiesAndAdditionalPropertiesClass.Map, jsonSerializerOptions);            writer.WriteString("uuid", mixedPropertiesAndAdditionalPropertiesClass.Uuid);
+            JsonSerializer.Serialize(writer, mixedPropertiesAndAdditionalPropertiesClass.Map, jsonSerializerOptions);
+            writer.WriteString("uuid", mixedPropertiesAndAdditionalPropertiesClass.Uuid);
             writer.WriteString("uuid_with_pattern", mixedPropertiesAndAdditionalPropertiesClass.UuidWithPattern);
         }
     }

@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection;
-using Org.OpenAPITools.IApi;
+using Org.OpenAPITools.Api;
 using Org.OpenAPITools.Model;
 
 
@@ -43,11 +43,11 @@ namespace Org.OpenAPITools.Test.Api
     /// </summary>
     public sealed class UserApiTests : ApiTestsBase
     {
-        private readonly IApi.IUserApi _instance;
+        private readonly IUserApi _instance;
 
         public UserApiTests(): base(Array.Empty<string>())
         {
-            _instance = _host.Services.GetRequiredService<IApi.IUserApi>();
+            _instance = _host.Services.GetRequiredService<IUserApi>();
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Org.OpenAPITools.Test.Api
         {
             string username = default;
             var response = await _instance.GetUserByNameAsync(username);
-            var model = response.AsModel();
+            var model = response.Ok();
             Assert.IsType<User>(model);
         }
 
@@ -111,7 +111,7 @@ namespace Org.OpenAPITools.Test.Api
             string username = default;
             string password = default;
             var response = await _instance.LoginUserAsync(username, password);
-            var model = response.AsModel();
+            var model = response.Ok();
             Assert.IsType<string>(model);
         }
 

@@ -124,10 +124,10 @@ namespace Org.OpenAPITools.Model
 
                 if (utf8JsonReader.TokenType == JsonTokenType.PropertyName && currentDepth == utf8JsonReader.CurrentDepth - 1)
                 {
-                    string? propertyName = utf8JsonReader.GetString();
+                    string? localVarJsonPropertyName = utf8JsonReader.GetString();
                     utf8JsonReader.Read();
 
-                    switch (propertyName)
+                    switch (localVarJsonPropertyName)
                     {
                         case "file":
                             if (utf8JsonReader.TokenType != JsonTokenType.Null)
@@ -177,7 +177,8 @@ namespace Org.OpenAPITools.Model
         public void WriteProperties(ref Utf8JsonWriter writer, FileSchemaTestClass fileSchemaTestClass, JsonSerializerOptions jsonSerializerOptions)
         {
             writer.WritePropertyName("file");
-            JsonSerializer.Serialize(writer, fileSchemaTestClass.File, jsonSerializerOptions);            writer.WritePropertyName("files");
+            JsonSerializer.Serialize(writer, fileSchemaTestClass.File, jsonSerializerOptions);
+            writer.WritePropertyName("files");
             JsonSerializer.Serialize(writer, fileSchemaTestClass.Files, jsonSerializerOptions);
         }
     }

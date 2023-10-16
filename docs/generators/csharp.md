@@ -25,6 +25,7 @@ These options may be applied as additional-properties (cli) or configOptions (pl
 |dateFormat|The default Date format (only `generichost` library supports this option).| |yyyy'-'MM'-'dd|
 |dateTimeFormat|The default DateTime format (only `generichost` library supports this option).| |yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fffffffK|
 |disallowAdditionalPropertiesIfNotPresent|If false, the 'additionalProperties' implementation (set to true by default) is compliant with the OAS and JSON schema specifications. If true (default), keep the old (incorrect) behaviour that 'additionalProperties' is set to false by default.|<dl><dt>**false**</dt><dd>The 'additionalProperties' implementation is compliant with the OAS and JSON schema specifications.</dd><dt>**true**</dt><dd>Keep the old (incorrect) behaviour that 'additionalProperties' is set to false by default.</dd></dl>|true|
+|equatable|Overrides Equals and GetHashCode methods.| |true|
 |hideGenerationTimestamp|Hides the generation timestamp when files are generated.| |true|
 |interfacePrefix|Prefix interfaces with a community standard or widely accepted prefix.| |I|
 |library|HTTP library template (sub-template) to use|<dl><dt>**generichost**</dt><dd>HttpClient with Generic Host dependency injection (https://docs.microsoft.com/en-us/dotnet/core/extensions/generic-host) (Experimental. Subject to breaking changes without notice.)</dd><dt>**httpclient**</dt><dd>HttpClient (https://docs.microsoft.com/en-us/dotnet/api/system.net.http.httpclient) (Experimental. Subject to breaking changes without notice.)</dd><dt>**unityWebRequest**</dt><dd>UnityWebRequest (...) (Experimental. Subject to breaking changes without notice.)</dd><dt>**restsharp**</dt><dd>RestSharp (https://github.com/restsharp/RestSharp)</dd></dl>|restsharp|
@@ -48,6 +49,7 @@ These options may be applied as additional-properties (cli) or configOptions (pl
 |useCollection|Deserialize array types to Collection&lt;T&gt; instead of List&lt;T&gt;.| |false|
 |useDateTimeOffset|Use DateTimeOffset to model date-time properties| |false|
 |useOneOfDiscriminatorLookup|Use the discriminator's mapping in oneOf to speed up the model lookup. IMPORTANT: Validation (e.g. one and only one match in oneOf's schemas) will be skipped.| |false|
+|useSourceGeneration|Use source generation where available (only `generichost` library supports this option).| |false|
 |validatable|Generates self-validatable models.| |true|
 |zeroBasedEnums|Enumerations with string values will start from 0 when true, 1 when false. If not set, enumerations with string values will start from 0 if the first value is 'unknown', case insensitive.| |null|
 
@@ -191,6 +193,7 @@ These options may be applied as additional-properties (cli) or configOptions (pl
 <li>string</li>
 <li>struct</li>
 <li>switch</li>
+<li>system</li>
 <li>this</li>
 <li>throw</li>
 <li>true</li>

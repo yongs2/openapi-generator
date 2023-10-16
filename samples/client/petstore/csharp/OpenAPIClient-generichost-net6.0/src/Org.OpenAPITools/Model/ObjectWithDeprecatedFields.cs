@@ -145,10 +145,10 @@ namespace Org.OpenAPITools.Model
 
                 if (utf8JsonReader.TokenType == JsonTokenType.PropertyName && currentDepth == utf8JsonReader.CurrentDepth - 1)
                 {
-                    string propertyName = utf8JsonReader.GetString();
+                    string localVarJsonPropertyName = utf8JsonReader.GetString();
                     utf8JsonReader.Read();
 
-                    switch (propertyName)
+                    switch (localVarJsonPropertyName)
                     {
                         case "bars":
                             if (utf8JsonReader.TokenType != JsonTokenType.Null)
@@ -211,8 +211,10 @@ namespace Org.OpenAPITools.Model
         public void WriteProperties(ref Utf8JsonWriter writer, ObjectWithDeprecatedFields objectWithDeprecatedFields, JsonSerializerOptions jsonSerializerOptions)
         {
             writer.WritePropertyName("bars");
-            JsonSerializer.Serialize(writer, objectWithDeprecatedFields.Bars, jsonSerializerOptions);            writer.WritePropertyName("deprecatedRef");
-            JsonSerializer.Serialize(writer, objectWithDeprecatedFields.DeprecatedRef, jsonSerializerOptions);            writer.WriteNumber("id", objectWithDeprecatedFields.Id);
+            JsonSerializer.Serialize(writer, objectWithDeprecatedFields.Bars, jsonSerializerOptions);
+            writer.WritePropertyName("deprecatedRef");
+            JsonSerializer.Serialize(writer, objectWithDeprecatedFields.DeprecatedRef, jsonSerializerOptions);
+            writer.WriteNumber("id", objectWithDeprecatedFields.Id);
             writer.WriteString("uuid", objectWithDeprecatedFields.Uuid);
         }
     }

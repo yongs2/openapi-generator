@@ -107,7 +107,7 @@ open class GenerateTask @Inject constructor(private val objectFactory: ObjectFac
      * Local root folder with spec files
      */
     @Optional
-    @get:InputFile
+    @get:InputDirectory
     @PathSensitive(PathSensitivity.RELATIVE)
     val inputSpecRootDirectory = project.objects.property<String>();
 
@@ -266,11 +266,32 @@ open class GenerateTask @Inject constructor(private val objectFactory: ObjectFac
     val inlineSchemaNameMappings = project.objects.mapProperty<String, String>()
 
     /**
-     * Specifies default values for inline schema naming convention
+     * Specifies options for inline schemas
      */
     @Optional
     @Input
-    val inlineSchemaNameDefaults = project.objects.mapProperty<String, String>()
+    val inlineSchemaOptions = project.objects.mapProperty<String, String>()
+
+    /**
+     * Specifies mappings between the property name and the new name
+     */
+    @Optional
+    @Input
+    val nameMappings = project.objects.mapProperty<String, String>()
+
+    /**
+     * Specifies mappings between the parameter name and the new name
+     */
+    @Optional
+    @Input
+    val parameterNameMappings = project.objects.mapProperty<String, String>()
+
+    /**
+     * Specifies mappings between the model name and the new name
+     */
+    @Optional
+    @Input
+    val modelNameMappings = project.objects.mapProperty<String, String>()
 
     /**
      * Specifies mappings (rules) in OpenAPI normalizer
@@ -564,10 +585,22 @@ open class GenerateTask @Inject constructor(private val objectFactory: ObjectFac
     @Suppress("unused")
     @TaskAction
     fun doWork() {
-        inputSpecRootDirectory.ifNotEmpty { inputSpecRootDirectoryValue -> {
-            inputSpec.set(MergedSpecBuilder(inputSpecRootDirectoryValue, mergedFileName.get()).buildMergedSpec())
-            logger.info("Merge input spec would be used - {}", inputSpec.get())
-        }}
+        var resolvedInputSpec = ""
+
+        inputSpec.ifNotEmpty { value ->
+            resolvedInputSpec = value
+        }
+
+        remoteInputSpec.ifNotEmpty { value ->
+            resolvedInputSpec = value
+        }
+
+        inputSpecRootDirectory.ifNotEmpty { inputSpecRootDirectoryValue ->
+            run {
+                resolvedInputSpec = MergedSpecBuilder(inputSpecRootDirectoryValue, mergedFileName.getOrElse("merged")).buildMergedSpec()
+                logger.info("Merge input spec would be used - {}", resolvedInputSpec)
+            }
+        }
 
         cleanupOutput.ifNotEmpty { cleanup ->
             if (cleanup) {
@@ -634,6 +667,8 @@ open class GenerateTask @Inject constructor(private val objectFactory: ObjectFac
                 logger.warn("Both inputSpec and remoteInputSpec is specified. The remoteInputSpec will take priority over inputSpec.")
             }
 
+            configurator.setInputSpec(resolvedInputSpec)
+
             // now override with any specified parameters
             verbose.ifNotEmpty { value ->
                 configurator.setVerbose(value)
@@ -645,14 +680,6 @@ open class GenerateTask @Inject constructor(private val objectFactory: ObjectFac
 
             skipOverwrite.ifNotEmpty { value ->
                 configurator.setSkipOverwrite(value ?: false)
-            }
-
-            inputSpec.ifNotEmpty { value ->
-                configurator.setInputSpec(value)
-            }
-
-            remoteInputSpec.ifNotEmpty { value ->
-                configurator.setInputSpec(value)
             }
 
             generatorName.ifNotEmpty { value ->
@@ -801,9 +828,27 @@ open class GenerateTask @Inject constructor(private val objectFactory: ObjectFac
                 }
             }
 
-            if (inlineSchemaNameDefaults.isPresent) {
-                inlineSchemaNameDefaults.get().forEach { entry ->
-                    configurator.addInlineSchemaNameDefault(entry.key, entry.value)
+            if (inlineSchemaOptions.isPresent) {
+                inlineSchemaOptions.get().forEach { entry ->
+                    configurator.addInlineSchemaOption(entry.key, entry.value)
+                }
+            }
+
+            if (nameMappings.isPresent) {
+                nameMappings.get().forEach { entry ->
+                    configurator.addNameMapping(entry.key, entry.value)
+                }
+            }
+
+            if (parameterNameMappings.isPresent) {
+                parameterNameMappings.get().forEach { entry ->
+                    configurator.addParameterNameMapping(entry.key, entry.value)
+                }
+            }
+
+            if (modelNameMappings.isPresent) {
+                modelNameMappings.get().forEach { entry ->
+                    configurator.addModelNameMapping(entry.key, entry.value)
                 }
             }
 

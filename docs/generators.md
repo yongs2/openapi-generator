@@ -50,8 +50,10 @@ The following generators are available:
 * [perl](generators/perl.md)  
 * [php](generators/php.md)  
 * [php-dt (beta)](generators/php-dt.md)  
+* [php-nextgen (beta)](generators/php-nextgen.md)  
 * [powershell (beta)](generators/powershell.md)  
 * [python](generators/python.md)  
+* [python-pydantic-v1](generators/python-pydantic-v1.md)  
 * [r](generators/r.md)  
 * [ruby](generators/ruby.md)  
 * [rust](generators/rust.md)  
@@ -74,6 +76,7 @@ The following generators are available:
 * [typescript-redux-query](generators/typescript-redux-query.md)  
 * [typescript-rxjs](generators/typescript-rxjs.md)  
 * [xojo-client](generators/xojo-client.md)  
+* [zapier (beta)](generators/zapier.md)  
 
 
 ## SERVER generators
@@ -118,7 +121,6 @@ The following generators are available:
 * [php-laravel](generators/php-laravel.md)  
 * [php-lumen](generators/php-lumen.md)  
 * [php-mezzio-ph](generators/php-mezzio-ph.md)  
-* [php-slim-deprecated (deprecated)](generators/php-slim-deprecated.md)  
 * [php-slim4](generators/php-slim4.md)  
 * [php-symfony](generators/php-symfony.md)  
 * [python-aiohttp](generators/python-aiohttp.md)  

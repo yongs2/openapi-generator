@@ -17,6 +17,7 @@ All URIs are relative to *http://petstore.swagger.io:80/v2*
 | [**TestEnumParameters**](FakeApi.md#testenumparameters) | **GET** /fake | To test enum parameters |
 | [**TestGroupParameters**](FakeApi.md#testgroupparameters) | **DELETE** /fake | Fake endpoint to test group parameters (optional) |
 | [**TestInlineAdditionalProperties**](FakeApi.md#testinlineadditionalproperties) | **POST** /fake/inline-additionalProperties | test inline additionalProperties |
+| [**TestInlineFreeformAdditionalProperties**](FakeApi.md#testinlinefreeformadditionalproperties) | **POST** /fake/inline-freeform-additionalProperties | test inline free-form additionalProperties |
 | [**TestJsonFormData**](FakeApi.md#testjsonformdata) | **GET** /fake/jsonFormData | test json serialization of form data |
 | [**TestQueryParameterCollectionFormat**](FakeApi.md#testqueryparametercollectionformat) | **PUT** /fake/test-query-parameters |  |
 
@@ -884,7 +885,7 @@ namespace Example
             var int32 = 56;  // int? | None (optional) 
             var int64 = 789L;  // long? | None (optional) 
             var varFloat = 3.4F;  // float? | None (optional) 
-            var varString = "string_example";  // string | None (optional) 
+            var varString = "varString_example";  // string | None (optional) 
             var binary = new System.IO.MemoryStream(System.IO.File.ReadAllBytes("/path/to/file.txt"));  // FileParameter | None (optional) 
             var date = DateTime.Parse("2013-10-20");  // DateTime? | None (optional) 
             var dateTime = DateTime.Parse(""2010-02-01T10:20:10.111110+01:00"");  // DateTime? | None (optional)  (default to "2010-02-01T10:20:10.111110+01:00")
@@ -1264,6 +1265,95 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+<a id="testinlinefreeformadditionalproperties"></a>
+# **TestInlineFreeformAdditionalProperties**
+> void TestInlineFreeformAdditionalProperties (TestInlineFreeformAdditionalPropertiesRequest testInlineFreeformAdditionalPropertiesRequest)
+
+test inline free-form additionalProperties
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class TestInlineFreeformAdditionalPropertiesExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "http://petstore.swagger.io:80/v2";
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new FakeApi(httpClient, config, httpClientHandler);
+            var testInlineFreeformAdditionalPropertiesRequest = new TestInlineFreeformAdditionalPropertiesRequest(); // TestInlineFreeformAdditionalPropertiesRequest | request body
+
+            try
+            {
+                // test inline free-form additionalProperties
+                apiInstance.TestInlineFreeformAdditionalProperties(testInlineFreeformAdditionalPropertiesRequest);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling FakeApi.TestInlineFreeformAdditionalProperties: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the TestInlineFreeformAdditionalPropertiesWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // test inline free-form additionalProperties
+    apiInstance.TestInlineFreeformAdditionalPropertiesWithHttpInfo(testInlineFreeformAdditionalPropertiesRequest);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling FakeApi.TestInlineFreeformAdditionalPropertiesWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **testInlineFreeformAdditionalPropertiesRequest** | [**TestInlineFreeformAdditionalPropertiesRequest**](TestInlineFreeformAdditionalPropertiesRequest.md) | request body |  |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | successful operation |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 <a id="testjsonformdata"></a>
 # **TestJsonFormData**
 > void TestJsonFormData (string param, string param2)
@@ -1357,7 +1447,7 @@ No authorization required
 
 <a id="testqueryparametercollectionformat"></a>
 # **TestQueryParameterCollectionFormat**
-> void TestQueryParameterCollectionFormat (List<string> pipe, List<string> ioutil, List<string> http, List<string> url, List<string> context)
+> void TestQueryParameterCollectionFormat (List<string> pipe, List<string> ioutil, List<string> http, List<string> url, List<string> context, string requiredNotNullable, string requiredNullable, string notRequiredNotNullable = null, string notRequiredNullable = null)
 
 
 
@@ -1389,10 +1479,14 @@ namespace Example
             var http = new List<string>(); // List<string> | 
             var url = new List<string>(); // List<string> | 
             var context = new List<string>(); // List<string> | 
+            var requiredNotNullable = "requiredNotNullable_example";  // string | 
+            var requiredNullable = "requiredNullable_example";  // string | 
+            var notRequiredNotNullable = "notRequiredNotNullable_example";  // string |  (optional) 
+            var notRequiredNullable = "notRequiredNullable_example";  // string |  (optional) 
 
             try
             {
-                apiInstance.TestQueryParameterCollectionFormat(pipe, ioutil, http, url, context);
+                apiInstance.TestQueryParameterCollectionFormat(pipe, ioutil, http, url, context, requiredNotNullable, requiredNullable, notRequiredNotNullable, notRequiredNullable);
             }
             catch (ApiException  e)
             {
@@ -1411,7 +1505,7 @@ This returns an ApiResponse object which contains the response data, status code
 ```csharp
 try
 {
-    apiInstance.TestQueryParameterCollectionFormatWithHttpInfo(pipe, ioutil, http, url, context);
+    apiInstance.TestQueryParameterCollectionFormatWithHttpInfo(pipe, ioutil, http, url, context, requiredNotNullable, requiredNullable, notRequiredNotNullable, notRequiredNullable);
 }
 catch (ApiException e)
 {
@@ -1430,6 +1524,10 @@ catch (ApiException e)
 | **http** | [**List&lt;string&gt;**](string.md) |  |  |
 | **url** | [**List&lt;string&gt;**](string.md) |  |  |
 | **context** | [**List&lt;string&gt;**](string.md) |  |  |
+| **requiredNotNullable** | **string** |  |  |
+| **requiredNullable** | **string** |  |  |
+| **notRequiredNotNullable** | **string** |  | [optional]  |
+| **notRequiredNullable** | **string** |  | [optional]  |
 
 ### Return type
 

@@ -37,6 +37,8 @@ public class CodegenDiscriminator {
     // see the method createDiscriminator in DefaultCodegen.java
 
     private Set<MappedModel> mappedModels = new TreeSet<>();
+    private Map<String, Object> vendorExtensions = new HashMap<>();
+
 
     public String getPropertyName() {
         return propertyName;
@@ -94,6 +96,14 @@ public class CodegenDiscriminator {
         this.isEnum = isEnum;
     }
 
+    public Map<String, Object> getVendorExtensions() {
+        return vendorExtensions;
+    }
+
+    public void setVendorExtensions(Map<String, Object> vendorExtensions) {
+        this.vendorExtensions = vendorExtensions;
+    }
+
     /**
      * An object to hold discriminator mappings between payload values and schema names or
      * references.
@@ -113,9 +123,16 @@ public class CodegenDiscriminator {
 
         private CodegenModel model;
 
-        public MappedModel(String mappingName, String modelName) {
+        private final boolean explicitMapping;
+
+        public MappedModel(String mappingName, String modelName, boolean explicitMapping) {
             this.mappingName = mappingName;
             this.modelName = modelName;
+            this.explicitMapping = explicitMapping;
+        }
+
+        public MappedModel(String mappingName, String modelName) {
+            this(mappingName, modelName, false);
         }
 
         @Override
@@ -127,7 +144,14 @@ public class CodegenDiscriminator {
             } else if (other.getMappingName() == null) {
                 return -1;
             }
-            return getMappingName().compareTo(other.getMappingName());
+
+            // prioritize mappings based on mappings in the spec before any auto-generated
+            // so that during serialization the proper values are used in the json
+            if (explicitMapping != other.explicitMapping) {
+                return explicitMapping ? -1 : 1;
+            } else {
+                return getMappingName().compareTo(other.getMappingName());
+            }
         }
 
         public String getMappingName() {
@@ -173,13 +197,14 @@ public class CodegenDiscriminator {
         return Objects.equals(propertyName, that.propertyName) &&
                 Objects.equals(propertyBaseName, that.propertyBaseName) &&
                 Objects.equals(mapping, that.mapping) &&
-                Objects.equals(mappedModels, that.mappedModels);
+                Objects.equals(mappedModels, that.mappedModels) &&
+                Objects.equals(vendorExtensions, that.vendorExtensions);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(propertyName, propertyBaseName, mapping, mappedModels);
+        return Objects.hash(propertyName, propertyBaseName, mapping, mappedModels, vendorExtensions);
     }
 
     @Override
@@ -189,6 +214,7 @@ public class CodegenDiscriminator {
         sb.append(", propertyBaseName='").append(propertyBaseName).append('\'');
         sb.append(", mapping=").append(mapping);
         sb.append(", mappedModels=").append(mappedModels);
+        sb.append(", vendorExtensions=").append(vendorExtensions);
         sb.append('}');
         return sb.toString();
     }

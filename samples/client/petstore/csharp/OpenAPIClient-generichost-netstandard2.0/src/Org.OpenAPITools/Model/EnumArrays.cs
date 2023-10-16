@@ -67,10 +67,10 @@ namespace Org.OpenAPITools.Model
         /// <exception cref="NotImplementedException"></exception>
         public static ArrayEnumEnum ArrayEnumEnumFromString(string value)
         {
-            if (value == "fish")
+            if (value.Equals("fish"))
                 return ArrayEnumEnum.Fish;
 
-            if (value == "crab")
+            if (value.Equals("crab"))
                 return ArrayEnumEnum.Crab;
 
             throw new NotImplementedException($"Could not convert value to type ArrayEnumEnum: '{value}'");
@@ -83,10 +83,10 @@ namespace Org.OpenAPITools.Model
         /// <returns></returns>
         public static ArrayEnumEnum? ArrayEnumEnumFromStringOrDefault(string value)
         {
-            if (value == "fish")
+            if (value.Equals("fish"))
                 return ArrayEnumEnum.Fish;
 
-            if (value == "crab")
+            if (value.Equals("crab"))
                 return ArrayEnumEnum.Crab;
 
             return null;
@@ -100,6 +100,7 @@ namespace Org.OpenAPITools.Model
         /// <exception cref="NotImplementedException"></exception>
         public static string ArrayEnumEnumToJsonValue(ArrayEnumEnum value)
         {
+
             if (value == ArrayEnumEnum.Fish)
                 return "fish";
 
@@ -133,10 +134,10 @@ namespace Org.OpenAPITools.Model
         /// <exception cref="NotImplementedException"></exception>
         public static JustSymbolEnum JustSymbolEnumFromString(string value)
         {
-            if (value == ">=")
+            if (value.Equals(">="))
                 return JustSymbolEnum.GreaterThanOrEqualTo;
 
-            if (value == "$")
+            if (value.Equals("$"))
                 return JustSymbolEnum.Dollar;
 
             throw new NotImplementedException($"Could not convert value to type JustSymbolEnum: '{value}'");
@@ -149,10 +150,10 @@ namespace Org.OpenAPITools.Model
         /// <returns></returns>
         public static JustSymbolEnum? JustSymbolEnumFromStringOrDefault(string value)
         {
-            if (value == ">=")
+            if (value.Equals(">="))
                 return JustSymbolEnum.GreaterThanOrEqualTo;
 
-            if (value == "$")
+            if (value.Equals("$"))
                 return JustSymbolEnum.Dollar;
 
             return null;
@@ -166,6 +167,7 @@ namespace Org.OpenAPITools.Model
         /// <exception cref="NotImplementedException"></exception>
         public static string JustSymbolEnumToJsonValue(JustSymbolEnum value)
         {
+
             if (value == JustSymbolEnum.GreaterThanOrEqualTo)
                 return ">=";
 
@@ -254,10 +256,10 @@ namespace Org.OpenAPITools.Model
 
                 if (utf8JsonReader.TokenType == JsonTokenType.PropertyName && currentDepth == utf8JsonReader.CurrentDepth - 1)
                 {
-                    string propertyName = utf8JsonReader.GetString();
+                    string localVarJsonPropertyName = utf8JsonReader.GetString();
                     utf8JsonReader.Read();
 
-                    switch (propertyName)
+                    switch (localVarJsonPropertyName)
                     {
                         case "array_enum":
                             if (utf8JsonReader.TokenType != JsonTokenType.Null)
@@ -310,6 +312,7 @@ namespace Org.OpenAPITools.Model
         {
             writer.WritePropertyName("array_enum");
             JsonSerializer.Serialize(writer, enumArrays.ArrayEnum, jsonSerializerOptions);
+
             var justSymbolRawValue = EnumArrays.JustSymbolEnumToJsonValue(enumArrays.JustSymbol);
             if (justSymbolRawValue != null)
                 writer.WriteString("just_symbol", justSymbolRawValue);

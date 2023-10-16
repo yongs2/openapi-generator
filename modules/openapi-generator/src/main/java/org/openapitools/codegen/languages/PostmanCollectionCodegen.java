@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.examples.Example;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.servers.ServerVariable;
 import org.openapitools.codegen.*;
 import org.openapitools.codegen.meta.GeneratorMetadata;
@@ -34,7 +35,7 @@ public class PostmanCollectionCodegen extends DefaultCodegen implements CodegenC
     public static final String FOLDER_STRATEGY_DEFAULT_VALUE = "Tags";
     // Select whether to create Postman variables for path templates
     public static final String PATH_PARAMS_AS_VARIABLES = "pathParamsAsVariables";
-    public static final Boolean PATH_PARAMS_AS_VARIABLES_DEFAULT_VALUE = true;
+    public static final Boolean PATH_PARAMS_AS_VARIABLES_DEFAULT_VALUE = false;
 
     public static final String POSTMAN_FILE_DEFAULT_VALUE = "postman.json";
 
@@ -134,7 +135,7 @@ public class PostmanCollectionCodegen extends DefaultCodegen implements CodegenC
             variables.add(new PostmanVariable()
                     .addName(parameter.paramName)
                     .addType(mapToPostmanType(parameter.dataType))
-                    .addExample(parameter.example));
+                    .addeDefaultValue(parameter.defaultValue));
         }
     }
 
@@ -151,7 +152,7 @@ public class PostmanCollectionCodegen extends DefaultCodegen implements CodegenC
             variables.entrySet().stream().forEach(serverVariableEntry -> this.variables.add(new PostmanVariable()
                     .addName(serverVariableEntry.getKey())
                     .addType("string")
-                    .addExample(serverVariableEntry.getValue().getDefault())));
+                    .addeDefaultValue(serverVariableEntry.getValue().getDefault())));
         }
 
         return super.fromServerVariables(variables);
@@ -216,9 +217,12 @@ public class PostmanCollectionCodegen extends DefaultCodegen implements CodegenC
         for(CodegenOperation codegenOperation : opList) {
 
             if(pathParamsAsVariables) {
+                // create Postman variable from path parameter
                 codegenOperation.path = doubleCurlyBraces(codegenOperation.path);
+            } else {
+                // use Postman notation for path parameter
+                codegenOperation.path = replacesBracesInPath(codegenOperation.path);
             }
-
             codegenOperation.summary = getSummary(codegenOperation);
 
             // request headers
@@ -401,7 +405,7 @@ public class PostmanCollectionCodegen extends DefaultCodegen implements CodegenC
                 variables.add(new PostmanVariable()
                         .addName(var)
                         .addType("string")
-                        .addExample(""));
+                        .addeDefaultValue(""));
             }
         }
 
@@ -463,6 +467,24 @@ public class PostmanCollectionCodegen extends DefaultCodegen implements CodegenC
     }
 
     /**
+     * Return the default value of the property
+     * <p>
+     * Return null when the default is not defined
+     *
+     * @param schema Property schema
+     * @return string presentation of the default value of the property
+     */
+    @SuppressWarnings("static-method")
+    @Override
+    public String toDefaultValue(Schema schema) {
+        if (schema.getDefault() != null) {
+            return schema.getDefault().toString();
+        }
+
+        return null;
+    }
+
+    /**
      * Escape single and/or double quote to avoid code injection
      *
      * @param input String to be cleaned up
@@ -482,6 +504,15 @@ public class PostmanCollectionCodegen extends DefaultCodegen implements CodegenC
 
         return s;
 
+    }
+
+    // convert path from /users/{id} to /users/:id
+    String replacesBracesInPath(String path) {
+
+        String s = path.replace("{", ":");
+        s = s.replace("}", "");
+
+        return s;
     }
 
     public String extractExampleByName(String ref) {
@@ -780,7 +811,7 @@ public class PostmanCollectionCodegen extends DefaultCodegen implements CodegenC
 
         private String name;
         private String type;
-        private String example;
+        private String defaultValue;
 
         public PostmanVariable addName(String name) {
             this.name = name;
@@ -792,8 +823,8 @@ public class PostmanCollectionCodegen extends DefaultCodegen implements CodegenC
             return this;
         }
 
-        public PostmanVariable addExample(String example) {
-            this.example = example;
+        public PostmanVariable addeDefaultValue(String defaultValue) {
+            this.defaultValue = defaultValue;
             return this;
         }
 
@@ -813,12 +844,12 @@ public class PostmanCollectionCodegen extends DefaultCodegen implements CodegenC
             this.type = type;
         }
 
-        public String getExample() {
-            return example;
+        public String getDefaultValue() {
+            return defaultValue;
         }
 
-        public void setExample(String example) {
-            this.example = example;
+        public void setDefaultValue(String defaultValue) {
+            this.defaultValue = defaultValue;
         }
 
         @Override
@@ -839,7 +870,7 @@ public class PostmanCollectionCodegen extends DefaultCodegen implements CodegenC
             return "PostmanVariable{" +
                     "name='" + name + '\'' +
                     ", type='" + type + '\'' +
-                    ", example='" + example + '\'' +
+                    ", defaultValue='" + defaultValue + '\'' +
                     '}';
         }
     }

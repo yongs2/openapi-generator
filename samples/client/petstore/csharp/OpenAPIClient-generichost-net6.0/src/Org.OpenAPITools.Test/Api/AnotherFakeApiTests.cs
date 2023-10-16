@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection;
-using Org.OpenAPITools.IApi;
+using Org.OpenAPITools.Api;
 using Org.OpenAPITools.Model;
 
 
@@ -43,11 +43,11 @@ namespace Org.OpenAPITools.Test.Api
     /// </summary>
     public sealed class AnotherFakeApiTests : ApiTestsBase
     {
-        private readonly IApi.IAnotherFakeApi _instance;
+        private readonly IAnotherFakeApi _instance;
 
         public AnotherFakeApiTests(): base(Array.Empty<string>())
         {
-            _instance = _host.Services.GetRequiredService<IApi.IAnotherFakeApi>();
+            _instance = _host.Services.GetRequiredService<IAnotherFakeApi>();
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Org.OpenAPITools.Test.Api
         {
             ModelClient modelClient = default;
             var response = await _instance.Call123TestSpecialTagsAsync(modelClient);
-            var model = response.AsModel();
+            var model = response.Ok();
             Assert.IsType<ModelClient>(model);
         }
     }

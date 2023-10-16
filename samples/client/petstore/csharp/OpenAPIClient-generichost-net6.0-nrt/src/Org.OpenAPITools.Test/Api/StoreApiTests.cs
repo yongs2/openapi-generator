@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection;
-using Org.OpenAPITools.IApi;
+using Org.OpenAPITools.Api;
 using Org.OpenAPITools.Model;
 
 
@@ -43,11 +43,11 @@ namespace Org.OpenAPITools.Test.Api
     /// </summary>
     public sealed class StoreApiTests : ApiTestsBase
     {
-        private readonly IApi.IStoreApi _instance;
+        private readonly IStoreApi _instance;
 
         public StoreApiTests(): base(Array.Empty<string>())
         {
-            _instance = _host.Services.GetRequiredService<IApi.IStoreApi>();
+            _instance = _host.Services.GetRequiredService<IStoreApi>();
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Org.OpenAPITools.Test.Api
         public async Task GetInventoryAsyncTest()
         {
             var response = await _instance.GetInventoryAsync();
-            var model = response.AsModel();
+            var model = response.Ok();
             Assert.IsType<Dictionary<string, int>>(model);
         }
 
@@ -79,7 +79,7 @@ namespace Org.OpenAPITools.Test.Api
         {
             long orderId = default!;
             var response = await _instance.GetOrderByIdAsync(orderId);
-            var model = response.AsModel();
+            var model = response.Ok();
             Assert.IsType<Order>(model);
         }
 
@@ -91,7 +91,7 @@ namespace Org.OpenAPITools.Test.Api
         {
             Order order = default!;
             var response = await _instance.PlaceOrderAsync(order);
-            var model = response.AsModel();
+            var model = response.Ok();
             Assert.IsType<Order>(model);
         }
     }

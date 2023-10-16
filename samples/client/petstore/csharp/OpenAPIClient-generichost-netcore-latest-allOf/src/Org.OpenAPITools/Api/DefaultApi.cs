@@ -20,8 +20,9 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Org.OpenAPITools.IApi
+namespace Org.OpenAPITools.Api
 {
     /// <summary>
     /// Represents a collection of functions to interact with the API endpoints
@@ -29,6 +30,11 @@ namespace Org.OpenAPITools.IApi
     /// </summary>
     public interface IDefaultApi : IApi
     {
+        /// <summary>
+        /// The class containing the events
+        /// </summary>
+        DefaultApiEvents Events { get; }
+
         /// <summary>
         /// 
         /// </summary>
@@ -38,8 +44,8 @@ namespace Org.OpenAPITools.IApi
         /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="personId">The id of the person to retrieve</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns>Task&lt;ApiResponse&lt;Person&gt;&gt;</returns>
-        Task<ApiResponse<Person>> ListAsync(string personId, System.Threading.CancellationToken cancellationToken = default);
+        /// <returns><see cref="Task"/>&lt;<see cref="IListApiResponse"/>&gt;</returns>
+        Task<IListApiResponse> ListAsync(string personId, System.Threading.CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 
@@ -49,19 +55,59 @@ namespace Org.OpenAPITools.IApi
         /// </remarks>
         /// <param name="personId">The id of the person to retrieve</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns>Task&lt;ApiResponse&gt;Person&gt;?&gt;</returns>
-        Task<ApiResponse<Person>?> ListOrDefaultAsync(string personId, System.Threading.CancellationToken cancellationToken = default);
+        /// <returns><see cref="Task"/>&lt;<see cref="IListApiResponse"/>?&gt;</returns>
+        Task<IListApiResponse?> ListOrDefaultAsync(string personId, System.Threading.CancellationToken cancellationToken = default);
     }
-}
 
-namespace Org.OpenAPITools.Api
-{
+    /// <summary>
+    /// The <see cref="IListApiResponse"/>
+    /// </summary>
+    public interface IListApiResponse : Org.OpenAPITools.Client.IApiResponse, IOk<Org.OpenAPITools.Model.Person?>
+    {
+        /// <summary>
+        /// Returns true if the response is 200 Ok
+        /// </summary>
+        /// <returns></returns>
+        bool IsOk { get; }
+    }
+
     /// <summary>
     /// Represents a collection of functions to interact with the API endpoints
     /// </summary>
-    public sealed partial class DefaultApi : IApi.IDefaultApi
+    public class DefaultApiEvents
+    {
+        /// <summary>
+        /// The event raised after the server response
+        /// </summary>
+        public event EventHandler<ApiResponseEventArgs>? OnList;
+
+        /// <summary>
+        /// The event raised after an error querying the server
+        /// </summary>
+        public event EventHandler<ExceptionEventArgs>? OnErrorList;
+
+        internal void ExecuteOnList(DefaultApi.ListApiResponse apiResponse)
+        {
+            OnList?.Invoke(this, new ApiResponseEventArgs(apiResponse));
+        }
+
+        internal void ExecuteOnErrorList(Exception exception)
+        {
+            OnErrorList?.Invoke(this, new ExceptionEventArgs(exception));
+        }
+    }
+
+    /// <summary>
+    /// Represents a collection of functions to interact with the API endpoints
+    /// </summary>
+    public sealed partial class DefaultApi : IDefaultApi
     {
         private JsonSerializerOptions _jsonSerializerOptions;
+
+        /// <summary>
+        /// The logger factory
+        /// </summary>
+        public ILoggerFactory LoggerFactory { get; }
 
         /// <summary>
         /// The logger
@@ -74,14 +120,21 @@ namespace Org.OpenAPITools.Api
         public HttpClient HttpClient { get; }
 
         /// <summary>
+        /// The class containing the events
+        /// </summary>
+        public DefaultApiEvents Events { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DefaultApi"/> class.
         /// </summary>
         /// <returns></returns>
-        public DefaultApi(ILogger<DefaultApi> logger, HttpClient httpClient, JsonSerializerOptionsProvider jsonSerializerOptionsProvider)
+        public DefaultApi(ILogger<DefaultApi> logger, ILoggerFactory loggerFactory, HttpClient httpClient, JsonSerializerOptionsProvider jsonSerializerOptionsProvider, DefaultApiEvents defaultApiEvents)
         {
             _jsonSerializerOptions = jsonSerializerOptionsProvider.Options;
-            Logger = logger;
+            LoggerFactory = loggerFactory;
+            Logger = LoggerFactory.CreateLogger<DefaultApi>();
             HttpClient = httpClient;
+            Events = defaultApiEvents;
         }
 
         partial void FormatList(ref string personId);
@@ -93,14 +146,8 @@ namespace Org.OpenAPITools.Api
         /// <returns></returns>
         private void ValidateList(string personId)
         {
-            #pragma warning disable CS0472 // The result of the expression is always the same since a value of this type is never equal to 'null'
-            #pragma warning disable CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
-
             if (personId == null)
                 throw new ArgumentNullException(nameof(personId));
-
-            #pragma warning restore CS0472 // The result of the expression is always the same since a value of this type is never equal to 'null'
-            #pragma warning restore CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
         }
 
         /// <summary>
@@ -108,7 +155,7 @@ namespace Org.OpenAPITools.Api
         /// </summary>
         /// <param name="apiResponseLocalVar"></param>
         /// <param name="personId"></param>
-        private void AfterListDefaultImplementation(ApiResponse<Person> apiResponseLocalVar, string personId)
+        private void AfterListDefaultImplementation(IListApiResponse apiResponseLocalVar, string personId)
         {
             bool suppressDefaultLog = false;
             AfterList(ref suppressDefaultLog, apiResponseLocalVar, personId);
@@ -122,7 +169,7 @@ namespace Org.OpenAPITools.Api
         /// <param name="suppressDefaultLog"></param>
         /// <param name="apiResponseLocalVar"></param>
         /// <param name="personId"></param>
-        partial void AfterList(ref bool suppressDefaultLog, ApiResponse<Person> apiResponseLocalVar, string personId);
+        partial void AfterList(ref bool suppressDefaultLog, IListApiResponse apiResponseLocalVar, string personId);
 
         /// <summary>
         /// Logs exceptions that occur while retrieving the server response
@@ -133,26 +180,29 @@ namespace Org.OpenAPITools.Api
         /// <param name="personId"></param>
         private void OnErrorListDefaultImplementation(Exception exception, string pathFormat, string path, string personId)
         {
-            Logger.LogError(exception, "An error occurred while sending the request to the server.");
-            OnErrorList(exception, pathFormat, path, personId);
+            bool suppressDefaultLog = false;
+            OnErrorList(ref suppressDefaultLog, exception, pathFormat, path, personId);
+            if (!suppressDefaultLog)
+                Logger.LogError(exception, "An error occurred while sending the request to the server.");
         }
 
         /// <summary>
         /// A partial method that gives developers a way to provide customized exception handling
         /// </summary>
+        /// <param name="suppressDefaultLog"></param>
         /// <param name="exception"></param>
         /// <param name="pathFormat"></param>
         /// <param name="path"></param>
         /// <param name="personId"></param>
-        partial void OnErrorList(Exception exception, string pathFormat, string path, string personId);
+        partial void OnErrorList(ref bool suppressDefaultLog, Exception exception, string pathFormat, string path, string personId);
 
         /// <summary>
         ///  
         /// </summary>
         /// <param name="personId">The id of the person to retrieve</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns><see cref="Task"/>&lt;<see cref="ApiResponse{T}"/>&gt; where T : <see cref="Person"/></returns>
-        public async Task<ApiResponse<Person>?> ListOrDefaultAsync(string personId, System.Threading.CancellationToken cancellationToken = default)
+        /// <returns><see cref="Task"/>&lt;<see cref="IListApiResponse"/>&gt;</returns>
+        public async Task<IListApiResponse?> ListOrDefaultAsync(string personId, System.Threading.CancellationToken cancellationToken = default)
         {
             try
             {
@@ -170,8 +220,8 @@ namespace Org.OpenAPITools.Api
         /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="personId">The id of the person to retrieve</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns><see cref="Task"/>&lt;<see cref="ApiResponse{T}"/>&gt; where T : <see cref="Person"/></returns>
-        public async Task<ApiResponse<Person>> ListAsync(string personId, System.Threading.CancellationToken cancellationToken = default)
+        /// <returns><see cref="Task"/>&lt;<see cref="IListApiResponse"/>&gt;</returns>
+        public async Task<IListApiResponse> ListAsync(string personId, System.Threading.CancellationToken cancellationToken = default)
         {
             UriBuilder uriBuilderLocalVar = new UriBuilder();
 
@@ -208,9 +258,13 @@ namespace Org.OpenAPITools.Api
                     {
                         string responseContentLocalVar = await httpResponseMessageLocalVar.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-                        ApiResponse<Person> apiResponseLocalVar = new ApiResponse<Person>(httpRequestMessageLocalVar, httpResponseMessageLocalVar, responseContentLocalVar, "/person/display/{personId}", requestedAtLocalVar, _jsonSerializerOptions);
+                        ILogger<ListApiResponse> apiResponseLoggerLocalVar = LoggerFactory.CreateLogger<ListApiResponse>();
+
+                        ListApiResponse apiResponseLocalVar = new(apiResponseLoggerLocalVar, httpRequestMessageLocalVar, httpResponseMessageLocalVar, responseContentLocalVar, "/person/display/{personId}", requestedAtLocalVar, _jsonSerializerOptions);
 
                         AfterListDefaultImplementation(apiResponseLocalVar, personId);
+
+                        Events.ExecuteOnList(apiResponseLocalVar);
 
                         return apiResponseLocalVar;
                     }
@@ -219,8 +273,86 @@ namespace Org.OpenAPITools.Api
             catch(Exception e)
             {
                 OnErrorListDefaultImplementation(e, "/person/display/{personId}", uriBuilderLocalVar.Path, personId);
+                Events.ExecuteOnErrorList(e);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// The <see cref="ListApiResponse"/>
+        /// </summary>
+        public partial class ListApiResponse : Org.OpenAPITools.Client.ApiResponse, IListApiResponse
+        {
+            /// <summary>
+            /// The logger
+            /// </summary>
+            public ILogger<ListApiResponse> Logger { get; }
+
+            /// <summary>
+            /// The <see cref="ListApiResponse"/>
+            /// </summary>
+            /// <param name="logger"></param>
+            /// <param name="httpRequestMessage"></param>
+            /// <param name="httpResponseMessage"></param>
+            /// <param name="rawContent"></param>
+            /// <param name="path"></param>
+            /// <param name="requestedAt"></param>
+            /// <param name="jsonSerializerOptions"></param>
+            public ListApiResponse(ILogger<ListApiResponse> logger, System.Net.Http.HttpRequestMessage httpRequestMessage, System.Net.Http.HttpResponseMessage httpResponseMessage, string rawContent, string path, DateTime requestedAt, System.Text.Json.JsonSerializerOptions jsonSerializerOptions) : base(httpRequestMessage, httpResponseMessage, rawContent, path, requestedAt, jsonSerializerOptions)
+            {
+                Logger = logger;
+                OnCreated(httpRequestMessage, httpResponseMessage);
+            }
+
+            partial void OnCreated(System.Net.Http.HttpRequestMessage httpRequestMessage, System.Net.Http.HttpResponseMessage httpResponseMessage);
+
+            /// <summary>
+            /// Returns true if the response is 200 Ok
+            /// </summary>
+            /// <returns></returns>
+            public bool IsOk => 200 == (int)StatusCode;
+
+            /// <summary>
+            /// Deserializes the response if the response is 200 Ok
+            /// </summary>
+            /// <returns></returns>
+            public Org.OpenAPITools.Model.Person? Ok()
+            {
+                // This logic may be modified with the AsModel.mustache template
+                return IsOk
+                    ? System.Text.Json.JsonSerializer.Deserialize<Org.OpenAPITools.Model.Person>(RawContent, _jsonSerializerOptions)
+                    : null;
+            }
+
+            /// <summary>
+            /// Returns true if the response is 200 Ok and the deserialized response is not null
+            /// </summary>
+            /// <param name="result"></param>
+            /// <returns></returns>
+            public bool TryOk([NotNullWhen(true)]out Org.OpenAPITools.Model.Person? result)
+            {
+                result = null;
+
+                try
+                {
+                    result = Ok();
+                } catch (Exception e)
+                {
+                    OnDeserializationErrorDefaultImplementation(e, (HttpStatusCode)200);
+                }
+
+                return result != null;
+            }
+
+            private void OnDeserializationErrorDefaultImplementation(Exception exception, HttpStatusCode httpStatusCode)
+            {
+                bool suppressDefaultLog = false;
+                OnDeserializationError(ref suppressDefaultLog, exception, httpStatusCode);
+                if (!suppressDefaultLog)
+                    Logger.LogError(exception, "An error occurred while deserializing the {code} response.", httpStatusCode);
+            }
+
+            partial void OnDeserializationError(ref bool suppressDefaultLog, Exception exception, HttpStatusCode httpStatusCode);
         }
     }
 }

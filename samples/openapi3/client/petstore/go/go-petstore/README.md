@@ -37,7 +37,7 @@ Default configuration comes with `Servers` field that contains server objects as
 
 ### Select Server Configuration
 
-For using other server than the one defined on index 0 set context value `sw.ContextServerIndex` of type `int`.
+For using other server than the one defined on index 0 set context value `petstore.ContextServerIndex` of type `int`.
 
 ```golang
 ctx := context.WithValue(context.Background(), petstore.ContextServerIndex, 1)
@@ -45,7 +45,7 @@ ctx := context.WithValue(context.Background(), petstore.ContextServerIndex, 1)
 
 ### Templated Server URL
 
-Templated server URL is formatted using default variables from configuration or from context value `sw.ContextServerVariables` of type `map[string]string`.
+Templated server URL is formatted using default variables from configuration or from context value `petstore.ContextServerVariables` of type `map[string]string`.
 
 ```golang
 ctx := context.WithValue(context.Background(), petstore.ContextServerVariables, map[string]string{
@@ -59,7 +59,7 @@ Note, enum values are always validated and all unused variables are silently ign
 
 Each operation can use different server URL defined using `OperationServers` map in the `Configuration`.
 An operation is uniquely identified by `"{classname}Service.{nickname}"` string.
-Similar rules for overriding default operation server index and variables applies by using `sw.ContextOperationServerIndices` and `sw.ContextOperationServerVariables` context maps.
+Similar rules for overriding default operation server index and variables applies by using `petstore.ContextOperationServerIndices` and `petstore.ContextOperationServerVariables` context maps.
 
 ```golang
 ctx := context.WithValue(context.Background(), petstore.ContextOperationServerIndices, map[string]int{
@@ -85,6 +85,7 @@ Class | Method | HTTP request | Description
 *FakeAPI* | [**FakeOuterCompositeSerialize**](docs/FakeAPI.md#fakeoutercompositeserialize) | **Post** /fake/outer/composite | 
 *FakeAPI* | [**FakeOuterNumberSerialize**](docs/FakeAPI.md#fakeouternumberserialize) | **Post** /fake/outer/number | 
 *FakeAPI* | [**FakeOuterStringSerialize**](docs/FakeAPI.md#fakeouterstringserialize) | **Post** /fake/outer/string | 
+*FakeAPI* | [**GetParameterNameMapping**](docs/FakeAPI.md#getparameternamemapping) | **Get** /fake/parameter-name-mapping | parameter name mapping test
 *FakeAPI* | [**TestBodyWithFileSchema**](docs/FakeAPI.md#testbodywithfileschema) | **Put** /fake/body-with-file-schema | 
 *FakeAPI* | [**TestBodyWithQueryParams**](docs/FakeAPI.md#testbodywithqueryparams) | **Put** /fake/body-with-query-params | 
 *FakeAPI* | [**TestClientModel**](docs/FakeAPI.md#testclientmodel) | **Patch** /fake | To test \&quot;client\&quot; model
@@ -92,6 +93,7 @@ Class | Method | HTTP request | Description
 *FakeAPI* | [**TestEnumParameters**](docs/FakeAPI.md#testenumparameters) | **Get** /fake | To test enum parameters
 *FakeAPI* | [**TestGroupParameters**](docs/FakeAPI.md#testgroupparameters) | **Delete** /fake | Fake endpoint to test group parameters (optional)
 *FakeAPI* | [**TestInlineAdditionalProperties**](docs/FakeAPI.md#testinlineadditionalproperties) | **Post** /fake/inline-additionalProperties | test inline additionalProperties
+*FakeAPI* | [**TestInlineFreeformAdditionalProperties**](docs/FakeAPI.md#testinlinefreeformadditionalproperties) | **Post** /fake/inline-freeform-additionalProperties | test inline free-form additionalProperties
 *FakeAPI* | [**TestJsonFormData**](docs/FakeAPI.md#testjsonformdata) | **Get** /fake/jsonFormData | test json serialization of form data
 *FakeAPI* | [**TestQueryDeepObject**](docs/FakeAPI.md#testquerydeepobject) | **Get** /fake/deep_object_test | 
 *FakeAPI* | [**TestQueryParameterCollectionFormat**](docs/FakeAPI.md#testqueryparametercollectionformat) | **Put** /fake/test-query-parameters | 
@@ -175,11 +177,13 @@ Class | Method | HTTP request | Description
  - [OuterEnumInteger](docs/OuterEnumInteger.md)
  - [OuterEnumIntegerDefaultValue](docs/OuterEnumIntegerDefaultValue.md)
  - [Pet](docs/Pet.md)
+ - [PropertyNameMapping](docs/PropertyNameMapping.md)
  - [ReadOnlyFirst](docs/ReadOnlyFirst.md)
  - [ReadOnlyWithDefault](docs/ReadOnlyWithDefault.md)
  - [Return](docs/Return.md)
  - [SpecialModelName](docs/SpecialModelName.md)
  - [Tag](docs/Tag.md)
+ - [TestInlineFreeformAdditionalPropertiesRequest](docs/TestInlineFreeformAdditionalPropertiesRequest.md)
  - [User](docs/User.md)
  - [Whale](docs/Whale.md)
  - [Zebra](docs/Zebra.md)
@@ -202,7 +206,7 @@ Authentication schemes defined for the API:
 Example
 
 ```golang
-auth := context.WithValue(context.Background(), sw.ContextAccessToken, "ACCESSTOKENSTRING")
+auth := context.WithValue(context.Background(), petstore.ContextAccessToken, "ACCESSTOKENSTRING")
 r, err := client.Service.Operation(auth, args)
 ```
 
@@ -214,7 +218,7 @@ import "golang.org/x/oauth2"
 /* Perform OAuth2 round trip request and obtain a token */
 
 tokenSource := oauth2cfg.TokenSource(createContext(httpClient), &token)
-auth := context.WithValue(oauth2.NoContext, sw.ContextOAuth2, tokenSource)
+auth := context.WithValue(oauth2.NoContext, petstore.ContextOAuth2, tokenSource)
 r, err := client.Service.Operation(auth, args)
 ```
 
@@ -231,8 +235,8 @@ Example
 ```golang
 auth := context.WithValue(
 		context.Background(),
-		sw.ContextAPIKeys,
-		map[string]sw.APIKey{
+		petstore.ContextAPIKeys,
+		map[string]petstore.APIKey{
 			"api_key": {Key: "API_KEY_STRING"},
 		},
 	)
@@ -252,8 +256,8 @@ Example
 ```golang
 auth := context.WithValue(
 		context.Background(),
-		sw.ContextAPIKeys,
-		map[string]sw.APIKey{
+		petstore.ContextAPIKeys,
+		map[string]petstore.APIKey{
 			"api_key_query": {Key: "API_KEY_STRING"},
 		},
 	)
@@ -267,7 +271,7 @@ r, err := client.Service.Operation(auth, args)
 Example
 
 ```golang
-auth := context.WithValue(context.Background(), sw.ContextBasicAuth, sw.BasicAuth{
+auth := context.WithValue(context.Background(), petstore.ContextBasicAuth, petstore.BasicAuth{
     UserName: "username",
     Password: "password",
 })
@@ -281,7 +285,7 @@ r, err := client.Service.Operation(auth, args)
 Example
 
 ```golang
-auth := context.WithValue(context.Background(), sw.ContextAccessToken, "BEARER_TOKEN_STRING")
+auth := context.WithValue(context.Background(), petstore.ContextAccessToken, "BEARER_TOKEN_STRING")
 r, err := client.Service.Operation(auth, args)
 ```
 
@@ -292,20 +296,20 @@ r, err := client.Service.Operation(auth, args)
 Example
 
 ```golang
-	authConfig := client.HttpSignatureAuth{
+	authConfig := petstore.HttpSignatureAuth{
 		KeyId:                "my-key-id",
 		PrivateKeyPath:       "rsa.pem",
 		Passphrase:           "my-passphrase",
-		SigningScheme:        sw.HttpSigningSchemeHs2019,
+		SigningScheme:        petstore.HttpSigningSchemeHs2019,
 		SignedHeaders:        []string{
-			sw.HttpSignatureParameterRequestTarget, // The special (request-target) parameter expresses the HTTP request target.
-			sw.HttpSignatureParameterCreated,       // Time when request was signed, formatted as a Unix timestamp integer value.
+			petstore.HttpSignatureParameterRequestTarget, // The special (request-target) parameter expresses the HTTP request target.
+			petstore.HttpSignatureParameterCreated,       // Time when request was signed, formatted as a Unix timestamp integer value.
 			"Host",                                 // The Host request header specifies the domain name of the server, and optionally the TCP port number.
 			"Date",                                 // The date and time at which the message was originated.
 			"Content-Type",                         // The Media type of the body of the request.
 			"Digest",                               // A cryptographic digest of the request body.
 		},
-		SigningAlgorithm:     sw.HttpSigningAlgorithmRsaPSS,
+		SigningAlgorithm:     petstore.HttpSigningAlgorithmRsaPSS,
 		SignatureMaxValidity: 5 * time.Minute,
 	}
 	var authCtx context.Context

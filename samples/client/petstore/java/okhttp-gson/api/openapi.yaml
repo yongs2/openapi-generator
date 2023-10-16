@@ -954,6 +954,25 @@ paths:
       - fake
       x-content-type: application/json
       x-accepts: application/json
+  /fake/inline-freeform-additionalProperties:
+    post:
+      description: ""
+      operationId: testInlineFreeformAdditionalProperties
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/testInlineFreeformAdditionalProperties_request'
+        description: request body
+        required: true
+      responses:
+        "200":
+          description: successful operation
+      summary: test inline free-form additionalProperties
+      tags:
+      - fake
+      x-content-type: application/json
+      x-accepts: application/json
   /fake/body-with-query-params:
     put:
       operationId: testBodyWithQueryParams
@@ -1131,6 +1150,85 @@ paths:
       summary: Array of Enums
       tags:
       - fake
+      x-accepts: application/json
+  /fake/parameter-name-mapping:
+    get:
+      operationId: getParameterNameMapping
+      parameters:
+      - description: _type
+        explode: false
+        in: header
+        name: _type
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      - description: type
+        explode: true
+        in: query
+        name: type
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: type_
+        explode: false
+        in: header
+        name: type_
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: OK
+      summary: parameter name mapping test
+      tags:
+      - fake
+      x-accepts: application/json
+  /fake/parameter-string-number:
+    get:
+      operationId: getParameterStringNumber
+      parameters:
+      - description: string number
+        explode: false
+        in: header
+        name: string_number
+        required: true
+        schema:
+          format: number
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: OK
+      summary: parameter string number
+      tags:
+      - another_fake
+      x-accepts: application/json
+  /fake/parameter-array-number:
+    get:
+      operationId: getParameterArrayNumber
+      parameters:
+      - description: array integer
+        explode: false
+        in: header
+        name: array
+        required: true
+        schema:
+          default:
+          - 1
+          items:
+            type: integer
+          type: array
+        style: simple
+      responses:
+        "200":
+          description: OK
+      summary: parameter array number default value
+      tags:
+      - another_fake
       x-accepts: application/json
   /values:
     get:
@@ -2259,12 +2357,68 @@ components:
         type: string
       - type: number
       - type: boolean
+    ScalarAnyOf:
+      anyOf:
+      - maxLength: 1089
+        type: string
+      - type: number
+      - type: boolean
+      description: Values of scalar type using anyOf
     Array:
       description: Values of array type
       items:
         $ref: '#/components/schemas/Scalar'
       minItems: 1
       type: array
+    NewPet:
+      properties:
+        id:
+          format: int64
+          type: integer
+          x-is-unique: true
+        category_inline_allof:
+          $ref: '#/components/schemas/NewPet_category_inline_allof'
+        category_allOf_ref:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+        name:
+          example: doggie
+          type: string
+        photoUrls:
+          items:
+            type: string
+          type: array
+          xml:
+            name: photoUrl
+            wrapped: true
+        tags:
+          items:
+            allOf:
+            - $ref: '#/components/schemas/Tag'
+          type: array
+          xml:
+            name: tag
+            wrapped: true
+        status:
+          description: pet status in the store
+          enum:
+          - available
+          - pending
+          - sold
+          type: string
+      required:
+      - name
+      - photoUrls
+      type: object
+    PropertyNameCollision:
+      properties:
+        _type:
+          type: string
+        type:
+          type: string
+        type_:
+          type: string
+      type: object
     _foo_get_default_response:
       example:
         string:
@@ -2398,6 +2552,12 @@ components:
       - param
       - param2
       type: object
+    testInlineFreeformAdditionalProperties_request:
+      additionalProperties: true
+      properties:
+        someProperty:
+          type: string
+      type: object
     uploadFileWithRequiredFile_request:
       properties:
         additionalMetadata:
@@ -2419,6 +2579,28 @@ components:
       - properties:
           color:
             type: string
+        type: object
+    NewPet_category_inline_allof_allOf_category_tag:
+      properties:
+        id:
+          format: int64
+          type: integer
+        name:
+          type: string
+      type: object
+    NewPet_category_inline_allof:
+      allOf:
+      - properties:
+          id:
+            format: int64
+            type: integer
+          name:
+            default: default-name
+            type: string
+          category_tag:
+            $ref: '#/components/schemas/NewPet_category_inline_allof_allOf_category_tag'
+        required:
+        - name
         type: object
   securitySchemes:
     petstore_auth:

@@ -17,7 +17,7 @@ All URIs are relative to *http://localhost:3000*
 
 ## testEnumRefString
 
-> String testEnumRefString(enumRefStringQuery)
+> String testEnumRefString(enumNonrefStringQuery, enumRefStringQuery)
 
 Test query parameter(s)
 
@@ -39,9 +39,10 @@ public class Example {
         defaultClient.setBasePath("http://localhost:3000");
 
         QueryApi apiInstance = new QueryApi(defaultClient);
+        String enumNonrefStringQuery = "success"; // String | 
         StringEnumRef enumRefStringQuery = StringEnumRef.fromValue("success"); // StringEnumRef | 
         try {
-            String result = apiInstance.testEnumRefString(enumRefStringQuery);
+            String result = apiInstance.testEnumRefString(enumNonrefStringQuery, enumRefStringQuery);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling QueryApi#testEnumRefString");
@@ -59,6 +60,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
+| **enumNonrefStringQuery** | **String**|  | [optional] [enum: success, failure, unclassified] |
 | **enumRefStringQuery** | [**StringEnumRef**](.md)|  | [optional] [enum: success, failure, unclassified] |
 
 ### Return type
@@ -245,7 +247,7 @@ public class Example {
         defaultClient.setBasePath("http://localhost:3000");
 
         QueryApi apiInstance = new QueryApi(defaultClient);
-        Pet queryObject = new HashMap(); // Pet | 
+        Pet queryObject = new Pet(); // Pet | 
         try {
             String result = apiInstance.testQueryStyleDeepObjectExplodeTrueObject(queryObject);
             System.out.println(result);
@@ -377,7 +379,7 @@ public class Example {
         defaultClient.setBasePath("http://localhost:3000");
 
         QueryApi apiInstance = new QueryApi(defaultClient);
-        TestQueryStyleFormExplodeTrueArrayStringQueryObjectParameter queryObject = new HashMap(); // TestQueryStyleFormExplodeTrueArrayStringQueryObjectParameter | 
+        TestQueryStyleFormExplodeTrueArrayStringQueryObjectParameter queryObject = new TestQueryStyleFormExplodeTrueArrayStringQueryObjectParameter(); // TestQueryStyleFormExplodeTrueArrayStringQueryObjectParameter | 
         try {
             String result = apiInstance.testQueryStyleFormExplodeTrueArrayString(queryObject);
             System.out.println(result);
@@ -443,7 +445,7 @@ public class Example {
         defaultClient.setBasePath("http://localhost:3000");
 
         QueryApi apiInstance = new QueryApi(defaultClient);
-        Pet queryObject = new HashMap(); // Pet | 
+        Pet queryObject = new Pet(); // Pet | 
         try {
             String result = apiInstance.testQueryStyleFormExplodeTrueObject(queryObject);
             System.out.println(result);

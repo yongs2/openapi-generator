@@ -138,6 +138,12 @@ namespace Org.OpenAPITools.Model
         public string? StringProp { get; set; }
 
         /// <summary>
+        /// Gets or Sets additional properties
+        /// </summary>
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> AdditionalProperties { get; } = new Dictionary<string, JsonElement>();
+
+        /// <summary>
         /// Returns the string presentation of the object
         /// </summary>
         /// <returns>String presentation of the object</returns>
@@ -158,6 +164,7 @@ namespace Org.OpenAPITools.Model
             sb.Append("  ObjectAndItemsNullableProp: ").Append(ObjectAndItemsNullableProp).Append("\n");
             sb.Append("  ObjectNullableProp: ").Append(ObjectNullableProp).Append("\n");
             sb.Append("  StringProp: ").Append(StringProp).Append("\n");
+            sb.Append("  AdditionalProperties: ").Append(AdditionalProperties).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
@@ -168,6 +175,16 @@ namespace Org.OpenAPITools.Model
         /// <param name="validationContext">Validation context</param>
         /// <returns>Validation Result</returns>
         IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> IValidatableObject.Validate(ValidationContext validationContext)
+        {
+            return this.BaseValidate(validationContext);
+        }
+
+        /// <summary>
+        /// To validate all properties of the instance
+        /// </summary>
+        /// <param name="validationContext">Validation context</param>
+        /// <returns>Validation Result</returns>
+        protected IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> BaseValidate(ValidationContext validationContext)
         {
             yield break;
         }
@@ -228,10 +245,10 @@ namespace Org.OpenAPITools.Model
 
                 if (utf8JsonReader.TokenType == JsonTokenType.PropertyName && currentDepth == utf8JsonReader.CurrentDepth - 1)
                 {
-                    string? propertyName = utf8JsonReader.GetString();
+                    string? localVarJsonPropertyName = utf8JsonReader.GetString();
                     utf8JsonReader.Read();
 
-                    switch (propertyName)
+                    switch (localVarJsonPropertyName)
                     {
                         case "array_items_nullable":
                             if (utf8JsonReader.TokenType != JsonTokenType.Null)
@@ -320,10 +337,14 @@ namespace Org.OpenAPITools.Model
         public void WriteProperties(ref Utf8JsonWriter writer, NullableClass nullableClass, JsonSerializerOptions jsonSerializerOptions)
         {
             writer.WritePropertyName("array_items_nullable");
-            JsonSerializer.Serialize(writer, nullableClass.ArrayItemsNullable, jsonSerializerOptions);            writer.WritePropertyName("object_items_nullable");
-            JsonSerializer.Serialize(writer, nullableClass.ObjectItemsNullable, jsonSerializerOptions);            writer.WritePropertyName("array_and_items_nullable_prop");
-            JsonSerializer.Serialize(writer, nullableClass.ArrayAndItemsNullableProp, jsonSerializerOptions);            writer.WritePropertyName("array_nullable_prop");
+            JsonSerializer.Serialize(writer, nullableClass.ArrayItemsNullable, jsonSerializerOptions);
+            writer.WritePropertyName("object_items_nullable");
+            JsonSerializer.Serialize(writer, nullableClass.ObjectItemsNullable, jsonSerializerOptions);
+            writer.WritePropertyName("array_and_items_nullable_prop");
+            JsonSerializer.Serialize(writer, nullableClass.ArrayAndItemsNullableProp, jsonSerializerOptions);
+            writer.WritePropertyName("array_nullable_prop");
             JsonSerializer.Serialize(writer, nullableClass.ArrayNullableProp, jsonSerializerOptions);
+
             if (nullableClass.BooleanProp != null)
                 writer.WriteBoolean("boolean_prop", nullableClass.BooleanProp.Value);
             else
@@ -350,8 +371,10 @@ namespace Org.OpenAPITools.Model
                 writer.WriteNull("number_prop");
 
             writer.WritePropertyName("object_and_items_nullable_prop");
-            JsonSerializer.Serialize(writer, nullableClass.ObjectAndItemsNullableProp, jsonSerializerOptions);            writer.WritePropertyName("object_nullable_prop");
-            JsonSerializer.Serialize(writer, nullableClass.ObjectNullableProp, jsonSerializerOptions);            writer.WriteString("string_prop", nullableClass.StringProp);
+            JsonSerializer.Serialize(writer, nullableClass.ObjectAndItemsNullableProp, jsonSerializerOptions);
+            writer.WritePropertyName("object_nullable_prop");
+            JsonSerializer.Serialize(writer, nullableClass.ObjectNullableProp, jsonSerializerOptions);
+            writer.WriteString("string_prop", nullableClass.StringProp);
         }
     }
 }

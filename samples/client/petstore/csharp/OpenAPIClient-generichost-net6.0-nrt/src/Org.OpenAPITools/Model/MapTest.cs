@@ -73,10 +73,10 @@ namespace Org.OpenAPITools.Model
         /// <exception cref="NotImplementedException"></exception>
         public static InnerEnum InnerEnumFromString(string value)
         {
-            if (value == "UPPER")
+            if (value.Equals("UPPER"))
                 return InnerEnum.UPPER;
 
-            if (value == "lower")
+            if (value.Equals("lower"))
                 return InnerEnum.Lower;
 
             throw new NotImplementedException($"Could not convert value to type InnerEnum: '{value}'");
@@ -89,10 +89,10 @@ namespace Org.OpenAPITools.Model
         /// <returns></returns>
         public static InnerEnum? InnerEnumFromStringOrDefault(string value)
         {
-            if (value == "UPPER")
+            if (value.Equals("UPPER"))
                 return InnerEnum.UPPER;
 
-            if (value == "lower")
+            if (value.Equals("lower"))
                 return InnerEnum.Lower;
 
             return null;
@@ -106,6 +106,7 @@ namespace Org.OpenAPITools.Model
         /// <exception cref="NotImplementedException"></exception>
         public static string InnerEnumToJsonValue(InnerEnum value)
         {
+
             if (value == InnerEnum.UPPER)
                 return "UPPER";
 
@@ -210,10 +211,10 @@ namespace Org.OpenAPITools.Model
 
                 if (utf8JsonReader.TokenType == JsonTokenType.PropertyName && currentDepth == utf8JsonReader.CurrentDepth - 1)
                 {
-                    string? propertyName = utf8JsonReader.GetString();
+                    string? localVarJsonPropertyName = utf8JsonReader.GetString();
                     utf8JsonReader.Read();
 
-                    switch (propertyName)
+                    switch (localVarJsonPropertyName)
                     {
                         case "direct_map":
                             if (utf8JsonReader.TokenType != JsonTokenType.Null)
@@ -277,9 +278,12 @@ namespace Org.OpenAPITools.Model
         public void WriteProperties(ref Utf8JsonWriter writer, MapTest mapTest, JsonSerializerOptions jsonSerializerOptions)
         {
             writer.WritePropertyName("direct_map");
-            JsonSerializer.Serialize(writer, mapTest.DirectMap, jsonSerializerOptions);            writer.WritePropertyName("indirect_map");
-            JsonSerializer.Serialize(writer, mapTest.IndirectMap, jsonSerializerOptions);            writer.WritePropertyName("map_map_of_string");
-            JsonSerializer.Serialize(writer, mapTest.MapMapOfString, jsonSerializerOptions);            writer.WritePropertyName("map_of_enum_string");
+            JsonSerializer.Serialize(writer, mapTest.DirectMap, jsonSerializerOptions);
+            writer.WritePropertyName("indirect_map");
+            JsonSerializer.Serialize(writer, mapTest.IndirectMap, jsonSerializerOptions);
+            writer.WritePropertyName("map_map_of_string");
+            JsonSerializer.Serialize(writer, mapTest.MapMapOfString, jsonSerializerOptions);
+            writer.WritePropertyName("map_of_enum_string");
             JsonSerializer.Serialize(writer, mapTest.MapOfEnumString, jsonSerializerOptions);
         }
     }

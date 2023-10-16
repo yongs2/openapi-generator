@@ -13,7 +13,7 @@
 	            "name": "default",
 	            "item": [
 	                        {
-    "name": "/users/{{userId}} (DEPRECATED)",
+    "name": "/users/:userId (DEPRECATED)",
                 "description": "Update the information of an existing user.",
                  "item": [
                             {
@@ -23,19 +23,23 @@
                                     "header": [
                                         {
                                             "key": "Content-Type",
-                                            "value": "application/json"
+                                            "value": "application/json",
+                                            "disabled": false
                                         },
                                         {
                                             "key": "Accept",
-                                            "value": "application/json"
+                                            "value": "application/json",
+                                            "disabled": false
                                         },
                                         {
                                             "key": "strCode",
-                                            "value": "code_one"
+                                            "value": "code_one",
+                                            "disabled": false
                                         },
                                         {
                                             "key": "strCode2",
-                                            "value": "null"
+                                            "value": "",
+                                            "disabled": true
                                         }
                                     ],
                                     "body": {
@@ -48,13 +52,13 @@
                                         }
                                     },
                                     "url": {
-                                        "raw": "{{baseUrl}}/users/{{userId}}",
+                                        "raw": "{{baseUrl}}/users/:userId",
                                         "host": [
                                             "{{baseUrl}}"
                                         ],
                                         "path": [
                                             "users",
-                                            "{{userId}}"
+                                            ":userId"
                                         ],
                                         "variable": [
                                             {
@@ -77,25 +81,18 @@
 	            "name": "advanced",
 	            "item": [
 	                        {
-    "name": "/users/{{userId}}",
-                "description": "Retrieve the information of the user with the matching user ID.",
+    "name": "/groups/:groupId",
+                "description": "Get group of users",
                  "item": [
                             {
-                                "name": "Get User Info by User ID",
+                                "name": "Get group by ID",
                                 "request": {
                                     "method": "GET",
                                     "header": [
                                         {
                                             "key": "Accept",
-                                            "value": "application/json"
-                                        },
-                                        {
-                                            "key": "strCode",
-                                            "value": "code_one"
-                                        },
-                                        {
-                                            "key": "strCode2",
-                                            "value": "null"
+                                            "value": "application/json",
+                                            "disabled": false
                                         }
                                     ],
                                     "body": {
@@ -108,13 +105,71 @@
                                         }
                                     },
                                     "url": {
-                                        "raw": "{{baseUrl}}/users/{{userId}}",
+                                        "raw": "{{baseUrl}}/groups/:groupId",
+                                        "host": [
+                                            "{{baseUrl}}"
+                                        ],
+                                        "path": [
+                                            "groups",
+                                            ":groupId"
+                                        ],
+                                        "variable": [
+                                            {
+                                                "key": "groupId",
+                                                "value": "",
+                                                "description": "group Id"
+                                            }
+                                        ],
+                                        "query": [
+                                        ]
+                                    },
+                                    "description": "Get group of users"
+                                }
+                            }
+                            ]
+                        },
+	                        {
+    "name": "/users/:userId",
+                "description": "Retrieve the information of the user with the matching user ID.",
+                 "item": [
+                            {
+                                "name": "Get User Info by User ID",
+                                "request": {
+                                    "method": "GET",
+                                    "header": [
+                                        {
+                                            "key": "Accept",
+                                            "value": "application/json",
+                                            "disabled": false
+                                        },
+                                        {
+                                            "key": "strCode",
+                                            "value": "code_one",
+                                            "disabled": false
+                                        },
+                                        {
+                                            "key": "strCode2",
+                                            "value": "",
+                                            "disabled": true
+                                        }
+                                    ],
+                                    "body": {
+                                        "mode": "raw",
+                                        "raw": "",
+                                        "options": {
+                                            "raw": {
+                                                "language": "json"
+                                            }
+                                        }
+                                    },
+                                    "url": {
+                                        "raw": "{{baseUrl}}/users/:userId",
                                         "host": [
                                             "{{baseUrl}}"
                                         ],
                                         "path": [
                                             "users",
-                                            "{{userId}}"
+                                            ":userId"
                                         ],
                                         "variable": [
                                             {
@@ -147,11 +202,18 @@
                                     "header": [
                                         {
                                             "key": "Accept",
-                                            "value": "application/json"
+                                            "value": "application/json",
+                                            "disabled": false
                                         },
                                         {
                                             "key": "Custom-Header",
-                                            "value": "null"
+                                            "value": "",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "Another-Custom-Header",
+                                            "value": "abc",
+                                            "disabled": false
                                         }
                                     ],
                                     "body": {
@@ -196,11 +258,13 @@
                                     "header": [
                                         {
                                             "key": "Content-Type",
-                                            "value": "application/json"
+                                            "value": "application/json",
+                                            "disabled": false
                                         },
                                         {
                                             "key": "Accept",
-                                            "value": "application/json"
+                                            "value": "application/json",
+                                            "disabled": false
                                         }
                                     ],
                                     "body": {
@@ -268,11 +332,6 @@
 			"key": "port",
 			"value": "5000",
 			"type": "string"
-		},
-		{
-			"key": "userId",
-			"value": "a",
-			"type": "number"
 		}
 	]
 }

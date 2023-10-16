@@ -134,10 +134,10 @@ namespace Org.OpenAPITools.Model
 
                 if (utf8JsonReader.TokenType == JsonTokenType.PropertyName && currentDepth == utf8JsonReader.CurrentDepth - 1)
                 {
-                    string? propertyName = utf8JsonReader.GetString();
+                    string? localVarJsonPropertyName = utf8JsonReader.GetString();
                     utf8JsonReader.Read();
 
-                    switch (propertyName)
+                    switch (localVarJsonPropertyName)
                     {
                         case "array_array_of_integer":
                             if (utf8JsonReader.TokenType != JsonTokenType.Null)
@@ -194,8 +194,10 @@ namespace Org.OpenAPITools.Model
         public void WriteProperties(ref Utf8JsonWriter writer, ArrayTest arrayTest, JsonSerializerOptions jsonSerializerOptions)
         {
             writer.WritePropertyName("array_array_of_integer");
-            JsonSerializer.Serialize(writer, arrayTest.ArrayArrayOfInteger, jsonSerializerOptions);            writer.WritePropertyName("array_array_of_model");
-            JsonSerializer.Serialize(writer, arrayTest.ArrayArrayOfModel, jsonSerializerOptions);            writer.WritePropertyName("array_of_string");
+            JsonSerializer.Serialize(writer, arrayTest.ArrayArrayOfInteger, jsonSerializerOptions);
+            writer.WritePropertyName("array_array_of_model");
+            JsonSerializer.Serialize(writer, arrayTest.ArrayArrayOfModel, jsonSerializerOptions);
+            writer.WritePropertyName("array_of_string");
             JsonSerializer.Serialize(writer, arrayTest.ArrayOfString, jsonSerializerOptions);
         }
     }

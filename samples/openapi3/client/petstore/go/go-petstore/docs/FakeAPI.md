@@ -9,6 +9,7 @@ Method | HTTP request | Description
 [**FakeOuterCompositeSerialize**](FakeAPI.md#FakeOuterCompositeSerialize) | **Post** /fake/outer/composite | 
 [**FakeOuterNumberSerialize**](FakeAPI.md#FakeOuterNumberSerialize) | **Post** /fake/outer/number | 
 [**FakeOuterStringSerialize**](FakeAPI.md#FakeOuterStringSerialize) | **Post** /fake/outer/string | 
+[**GetParameterNameMapping**](FakeAPI.md#GetParameterNameMapping) | **Get** /fake/parameter-name-mapping | parameter name mapping test
 [**TestBodyWithFileSchema**](FakeAPI.md#TestBodyWithFileSchema) | **Put** /fake/body-with-file-schema | 
 [**TestBodyWithQueryParams**](FakeAPI.md#TestBodyWithQueryParams) | **Put** /fake/body-with-query-params | 
 [**TestClientModel**](FakeAPI.md#TestClientModel) | **Patch** /fake | To test \&quot;client\&quot; model
@@ -16,6 +17,7 @@ Method | HTTP request | Description
 [**TestEnumParameters**](FakeAPI.md#TestEnumParameters) | **Get** /fake | To test enum parameters
 [**TestGroupParameters**](FakeAPI.md#TestGroupParameters) | **Delete** /fake | Fake endpoint to test group parameters (optional)
 [**TestInlineAdditionalProperties**](FakeAPI.md#TestInlineAdditionalProperties) | **Post** /fake/inline-additionalProperties | test inline additionalProperties
+[**TestInlineFreeformAdditionalProperties**](FakeAPI.md#TestInlineFreeformAdditionalProperties) | **Post** /fake/inline-freeform-additionalProperties | test inline free-form additionalProperties
 [**TestJsonFormData**](FakeAPI.md#TestJsonFormData) | **Get** /fake/jsonFormData | test json serialization of form data
 [**TestQueryDeepObject**](FakeAPI.md#TestQueryDeepObject) | **Get** /fake/deep_object_test | 
 [**TestQueryParameterCollectionFormat**](FakeAPI.md#TestQueryParameterCollectionFormat) | **Put** /fake/test-query-parameters | 
@@ -340,6 +342,74 @@ No authorization required
 
 - **Content-Type**: application/json
 - **Accept**: */*
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## GetParameterNameMapping
+
+> GetParameterNameMapping(ctx).UnderscoreType(underscoreType).Type_(type_).TypeWithUnderscore(typeWithUnderscore).HttpDebugOption(httpDebugOption).Execute()
+
+parameter name mapping test
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+    underscoreType := int64(789) // int64 | _type
+    type_ := "type__example" // string | type
+    typeWithUnderscore := "typeWithUnderscore_example" // string | type_
+    httpDebugOption := "httpDebugOption_example" // string | http debug option (to test parameter naming option)
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    r, err := apiClient.FakeAPI.GetParameterNameMapping(context.Background()).UnderscoreType(underscoreType).Type_(type_).TypeWithUnderscore(typeWithUnderscore).HttpDebugOption(httpDebugOption).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `FakeAPI.GetParameterNameMapping``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetParameterNameMappingRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **underscoreType** | **int64** | _type | 
+ **type_** | **string** | type | 
+ **typeWithUnderscore** | **string** | type_ | 
+ **httpDebugOption** | **string** | http debug option (to test parameter naming option) | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
 [[Back to Model list]](../README.md#documentation-for-models)
@@ -847,6 +917,70 @@ No authorization required
 [[Back to README]](../README.md)
 
 
+## TestInlineFreeformAdditionalProperties
+
+> TestInlineFreeformAdditionalProperties(ctx).TestInlineFreeformAdditionalPropertiesRequest(testInlineFreeformAdditionalPropertiesRequest).Execute()
+
+test inline free-form additionalProperties
+
+
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+    testInlineFreeformAdditionalPropertiesRequest := *openapiclient.NewTestInlineFreeformAdditionalPropertiesRequest() // TestInlineFreeformAdditionalPropertiesRequest | request body
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    r, err := apiClient.FakeAPI.TestInlineFreeformAdditionalProperties(context.Background()).TestInlineFreeformAdditionalPropertiesRequest(testInlineFreeformAdditionalPropertiesRequest).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `FakeAPI.TestInlineFreeformAdditionalProperties``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiTestInlineFreeformAdditionalPropertiesRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **testInlineFreeformAdditionalPropertiesRequest** | [**TestInlineFreeformAdditionalPropertiesRequest**](TestInlineFreeformAdditionalPropertiesRequest.md) | request body | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
 ## TestJsonFormData
 
 > TestJsonFormData(ctx).Param(param).Param2(param2).Execute()
@@ -932,8 +1066,8 @@ import (
 )
 
 func main() {
-    testPet := map[string][]openapiclient.Pet{"key": map[string]interface{}{ ... }} // Pet |  (optional)
-    inputOptions := map[string][]openapiclient.Category{"key": map[string]interface{}{ ... }} // Category |  (optional)
+    testPet := *openapiclient.NewPet("doggie", []string{"PhotoUrls_example"}) // Pet |  (optional)
+    inputOptions := *openapiclient.NewCategory("Name_example") // Category |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)

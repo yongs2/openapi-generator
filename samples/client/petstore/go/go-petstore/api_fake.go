@@ -1424,6 +1424,9 @@ func (a *FakeAPIService) TestEnumParametersExecute(r ApiTestEnumParametersReques
 	}
 	if r.enumQueryString != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "enum_query_string", r.enumQueryString, "")
+	} else {
+		var defaultValue string = "-efg"
+		r.enumQueryString = &defaultValue
 	}
 	if r.enumQueryInteger != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "enum_query_integer", r.enumQueryInteger, "")
@@ -1942,7 +1945,7 @@ func (a *FakeAPIService) TestQueryParameterCollectionFormatExecute(r ApiTestQuer
 		if reflect.TypeOf(t).Kind() == reflect.Slice {
 			s := reflect.ValueOf(t)
 			for i := 0; i < s.Len(); i++ {
-				parameterAddToHeaderOrQuery(localVarQueryParams, "context", s.Index(i), "multi")
+				parameterAddToHeaderOrQuery(localVarQueryParams, "context", s.Index(i).Interface(), "multi")
 			}
 		} else {
 			parameterAddToHeaderOrQuery(localVarQueryParams, "context", t, "multi")

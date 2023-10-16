@@ -74,6 +74,12 @@ namespace Org.OpenAPITools.Model
         public ShapeOrNull? ShapeOrNull { get; set; }
 
         /// <summary>
+        /// Gets or Sets additional properties
+        /// </summary>
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> AdditionalProperties { get; } = new Dictionary<string, JsonElement>();
+
+        /// <summary>
         /// Returns the string presentation of the object
         /// </summary>
         /// <returns>String presentation of the object</returns>
@@ -86,6 +92,7 @@ namespace Org.OpenAPITools.Model
             sb.Append("  Shapes: ").Append(Shapes).Append("\n");
             sb.Append("  NullableShape: ").Append(NullableShape).Append("\n");
             sb.Append("  ShapeOrNull: ").Append(ShapeOrNull).Append("\n");
+            sb.Append("  AdditionalProperties: ").Append(AdditionalProperties).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
@@ -96,6 +103,16 @@ namespace Org.OpenAPITools.Model
         /// <param name="validationContext">Validation context</param>
         /// <returns>Validation Result</returns>
         IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> IValidatableObject.Validate(ValidationContext validationContext)
+        {
+            return this.BaseValidate(validationContext);
+        }
+
+        /// <summary>
+        /// To validate all properties of the instance
+        /// </summary>
+        /// <param name="validationContext">Validation context</param>
+        /// <returns>Validation Result</returns>
+        protected IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> BaseValidate(ValidationContext validationContext)
         {
             yield break;
         }
@@ -138,10 +155,10 @@ namespace Org.OpenAPITools.Model
 
                 if (utf8JsonReader.TokenType == JsonTokenType.PropertyName && currentDepth == utf8JsonReader.CurrentDepth - 1)
                 {
-                    string? propertyName = utf8JsonReader.GetString();
+                    string? localVarJsonPropertyName = utf8JsonReader.GetString();
                     utf8JsonReader.Read();
 
-                    switch (propertyName)
+                    switch (localVarJsonPropertyName)
                     {
                         case "mainShape":
                             if (utf8JsonReader.TokenType != JsonTokenType.Null)
@@ -199,9 +216,12 @@ namespace Org.OpenAPITools.Model
         public void WriteProperties(ref Utf8JsonWriter writer, Drawing drawing, JsonSerializerOptions jsonSerializerOptions)
         {
             writer.WritePropertyName("mainShape");
-            JsonSerializer.Serialize(writer, drawing.MainShape, jsonSerializerOptions);            writer.WritePropertyName("shapes");
-            JsonSerializer.Serialize(writer, drawing.Shapes, jsonSerializerOptions);            writer.WritePropertyName("nullableShape");
-            JsonSerializer.Serialize(writer, drawing.NullableShape, jsonSerializerOptions);            writer.WritePropertyName("shapeOrNull");
+            JsonSerializer.Serialize(writer, drawing.MainShape, jsonSerializerOptions);
+            writer.WritePropertyName("shapes");
+            JsonSerializer.Serialize(writer, drawing.Shapes, jsonSerializerOptions);
+            writer.WritePropertyName("nullableShape");
+            JsonSerializer.Serialize(writer, drawing.NullableShape, jsonSerializerOptions);
+            writer.WritePropertyName("shapeOrNull");
             JsonSerializer.Serialize(writer, drawing.ShapeOrNull, jsonSerializerOptions);
         }
     }

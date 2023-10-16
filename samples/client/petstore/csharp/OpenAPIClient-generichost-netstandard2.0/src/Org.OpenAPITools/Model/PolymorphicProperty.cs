@@ -32,7 +32,6 @@ namespace Org.OpenAPITools.Model
         /// Initializes a new instance of the <see cref="PolymorphicProperty" /> class.
         /// </summary>
         /// <param name="varBool"></param>
-        [JsonConstructor]
         internal PolymorphicProperty(bool varBool)
         {
             VarBool = varBool;
@@ -43,7 +42,6 @@ namespace Org.OpenAPITools.Model
         /// Initializes a new instance of the <see cref="PolymorphicProperty" /> class.
         /// </summary>
         /// <param name="varString"></param>
-        [JsonConstructor]
         internal PolymorphicProperty(string varString)
         {
             VarString = varString;
@@ -54,7 +52,6 @@ namespace Org.OpenAPITools.Model
         /// Initializes a new instance of the <see cref="PolymorphicProperty" /> class.
         /// </summary>
         /// <param name="varObject"></param>
-        [JsonConstructor]
         internal PolymorphicProperty(Object varObject)
         {
             VarObject = varObject;
@@ -65,7 +62,6 @@ namespace Org.OpenAPITools.Model
         /// Initializes a new instance of the <see cref="PolymorphicProperty" /> class.
         /// </summary>
         /// <param name="list"></param>
-        [JsonConstructor]
         internal PolymorphicProperty(List<string> list)
         {
             List = list;
@@ -77,7 +73,7 @@ namespace Org.OpenAPITools.Model
         /// <summary>
         /// Gets or Sets VarBool
         /// </summary>
-        public bool VarBool { get; set; }
+        public bool? VarBool { get; set; }
 
         /// <summary>
         /// Gets or Sets VarString
@@ -146,7 +142,7 @@ namespace Org.OpenAPITools.Model
 
             JsonTokenType startingTokenType = utf8JsonReader.TokenType;
 
-            bool varBool = default;
+            bool? varBool = default;
             string varString = default;
             Object varObject = default;
             List<string> list = default;
@@ -163,7 +159,7 @@ namespace Org.OpenAPITools.Model
                 if (utf8JsonReaderOneOf.TokenType == JsonTokenType.PropertyName && currentDepth == utf8JsonReaderOneOf.CurrentDepth - 1)
                 {
                     Utf8JsonReader utf8JsonReaderVarBool = utf8JsonReader;
-                    OpenAPIClientUtils.TryDeserialize<bool>(ref utf8JsonReaderVarBool, jsonSerializerOptions, out varBool);
+                    OpenAPIClientUtils.TryDeserialize<bool?>(ref utf8JsonReaderVarBool, jsonSerializerOptions, out varBool);
 
                     Utf8JsonReader utf8JsonReaderVarString = utf8JsonReader;
                     OpenAPIClientUtils.TryDeserialize<string>(ref utf8JsonReaderVarString, jsonSerializerOptions, out varString);
@@ -186,10 +182,10 @@ namespace Org.OpenAPITools.Model
 
                 if (utf8JsonReader.TokenType == JsonTokenType.PropertyName && currentDepth == utf8JsonReader.CurrentDepth - 1)
                 {
-                    string propertyName = utf8JsonReader.GetString();
+                    string localVarJsonPropertyName = utf8JsonReader.GetString();
                     utf8JsonReader.Read();
 
-                    switch (propertyName)
+                    switch (localVarJsonPropertyName)
                     {
                         default:
                             break;

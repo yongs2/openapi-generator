@@ -20,8 +20,9 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Org.OpenAPITools.IApi
+namespace Org.OpenAPITools.Api
 {
     /// <summary>
     /// Represents a collection of functions to interact with the API endpoints
@@ -30,6 +31,11 @@ namespace Org.OpenAPITools.IApi
     public interface IStoreApi : IApi
     {
         /// <summary>
+        /// The class containing the events
+        /// </summary>
+        StoreApiEvents Events { get; }
+
+        /// <summary>
         /// Delete purchase order by ID
         /// </summary>
         /// <remarks>
@@ -38,8 +44,8 @@ namespace Org.OpenAPITools.IApi
         /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="orderId">ID of the order that needs to be deleted</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns>Task&lt;ApiResponse&lt;object&gt;&gt;</returns>
-        Task<ApiResponse<object>> DeleteOrderAsync(string orderId, System.Threading.CancellationToken cancellationToken = default);
+        /// <returns><see cref="Task"/>&lt;<see cref="IDeleteOrderApiResponse"/>&gt;</returns>
+        Task<IDeleteOrderApiResponse> DeleteOrderAsync(string orderId, System.Threading.CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Delete purchase order by ID
@@ -49,8 +55,8 @@ namespace Org.OpenAPITools.IApi
         /// </remarks>
         /// <param name="orderId">ID of the order that needs to be deleted</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns>Task&lt;ApiResponse&gt;object&gt;?&gt;</returns>
-        Task<ApiResponse<object>?> DeleteOrderOrDefaultAsync(string orderId, System.Threading.CancellationToken cancellationToken = default);
+        /// <returns><see cref="Task"/>&lt;<see cref="IDeleteOrderApiResponse"/>?&gt;</returns>
+        Task<IDeleteOrderApiResponse?> DeleteOrderOrDefaultAsync(string orderId, System.Threading.CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Returns pet inventories by status
@@ -60,8 +66,8 @@ namespace Org.OpenAPITools.IApi
         /// </remarks>
         /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns>Task&lt;ApiResponse&lt;Dictionary&lt;string, int&gt;&gt;&gt;</returns>
-        Task<ApiResponse<Dictionary<string, int>>> GetInventoryAsync(System.Threading.CancellationToken cancellationToken = default);
+        /// <returns><see cref="Task"/>&lt;<see cref="IGetInventoryApiResponse"/>&gt;</returns>
+        Task<IGetInventoryApiResponse> GetInventoryAsync(System.Threading.CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Returns pet inventories by status
@@ -70,8 +76,8 @@ namespace Org.OpenAPITools.IApi
         /// Returns a map of status codes to quantities
         /// </remarks>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns>Task&lt;ApiResponse&gt;Dictionary&lt;string, int&gt;&gt;?&gt;</returns>
-        Task<ApiResponse<Dictionary<string, int>>?> GetInventoryOrDefaultAsync(System.Threading.CancellationToken cancellationToken = default);
+        /// <returns><see cref="Task"/>&lt;<see cref="IGetInventoryApiResponse"/>?&gt;</returns>
+        Task<IGetInventoryApiResponse?> GetInventoryOrDefaultAsync(System.Threading.CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Find purchase order by ID
@@ -82,8 +88,8 @@ namespace Org.OpenAPITools.IApi
         /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="orderId">ID of pet that needs to be fetched</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns>Task&lt;ApiResponse&lt;Order&gt;&gt;</returns>
-        Task<ApiResponse<Order>> GetOrderByIdAsync(long orderId, System.Threading.CancellationToken cancellationToken = default);
+        /// <returns><see cref="Task"/>&lt;<see cref="IGetOrderByIdApiResponse"/>&gt;</returns>
+        Task<IGetOrderByIdApiResponse> GetOrderByIdAsync(long orderId, System.Threading.CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Find purchase order by ID
@@ -93,8 +99,8 @@ namespace Org.OpenAPITools.IApi
         /// </remarks>
         /// <param name="orderId">ID of pet that needs to be fetched</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns>Task&lt;ApiResponse&gt;Order&gt;?&gt;</returns>
-        Task<ApiResponse<Order>?> GetOrderByIdOrDefaultAsync(long orderId, System.Threading.CancellationToken cancellationToken = default);
+        /// <returns><see cref="Task"/>&lt;<see cref="IGetOrderByIdApiResponse"/>?&gt;</returns>
+        Task<IGetOrderByIdApiResponse?> GetOrderByIdOrDefaultAsync(long orderId, System.Threading.CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Place an order for a pet
@@ -105,8 +111,8 @@ namespace Org.OpenAPITools.IApi
         /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="order">order placed for purchasing the pet</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns>Task&lt;ApiResponse&lt;Order&gt;&gt;</returns>
-        Task<ApiResponse<Order>> PlaceOrderAsync(Order order, System.Threading.CancellationToken cancellationToken = default);
+        /// <returns><see cref="Task"/>&lt;<see cref="IPlaceOrderApiResponse"/>&gt;</returns>
+        Task<IPlaceOrderApiResponse> PlaceOrderAsync(Order order, System.Threading.CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Place an order for a pet
@@ -116,19 +122,179 @@ namespace Org.OpenAPITools.IApi
         /// </remarks>
         /// <param name="order">order placed for purchasing the pet</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns>Task&lt;ApiResponse&gt;Order&gt;?&gt;</returns>
-        Task<ApiResponse<Order>?> PlaceOrderOrDefaultAsync(Order order, System.Threading.CancellationToken cancellationToken = default);
+        /// <returns><see cref="Task"/>&lt;<see cref="IPlaceOrderApiResponse"/>?&gt;</returns>
+        Task<IPlaceOrderApiResponse?> PlaceOrderOrDefaultAsync(Order order, System.Threading.CancellationToken cancellationToken = default);
     }
-}
 
-namespace Org.OpenAPITools.Api
-{
+    /// <summary>
+    /// The <see cref="IDeleteOrderApiResponse"/>
+    /// </summary>
+    public interface IDeleteOrderApiResponse : Org.OpenAPITools.Client.IApiResponse
+    {
+        /// <summary>
+        /// Returns true if the response is 400 BadRequest
+        /// </summary>
+        /// <returns></returns>
+        bool IsBadRequest { get; }
+
+        /// <summary>
+        /// Returns true if the response is 404 NotFound
+        /// </summary>
+        /// <returns></returns>
+        bool IsNotFound { get; }
+    }
+
+    /// <summary>
+    /// The <see cref="IGetInventoryApiResponse"/>
+    /// </summary>
+    public interface IGetInventoryApiResponse : Org.OpenAPITools.Client.IApiResponse, IOk<Dictionary<string, int>?>
+    {
+        /// <summary>
+        /// Returns true if the response is 200 Ok
+        /// </summary>
+        /// <returns></returns>
+        bool IsOk { get; }
+    }
+
+    /// <summary>
+    /// The <see cref="IGetOrderByIdApiResponse"/>
+    /// </summary>
+    public interface IGetOrderByIdApiResponse : Org.OpenAPITools.Client.IApiResponse, IOk<Org.OpenAPITools.Model.Order?>
+    {
+        /// <summary>
+        /// Returns true if the response is 200 Ok
+        /// </summary>
+        /// <returns></returns>
+        bool IsOk { get; }
+
+        /// <summary>
+        /// Returns true if the response is 400 BadRequest
+        /// </summary>
+        /// <returns></returns>
+        bool IsBadRequest { get; }
+
+        /// <summary>
+        /// Returns true if the response is 404 NotFound
+        /// </summary>
+        /// <returns></returns>
+        bool IsNotFound { get; }
+    }
+
+    /// <summary>
+    /// The <see cref="IPlaceOrderApiResponse"/>
+    /// </summary>
+    public interface IPlaceOrderApiResponse : Org.OpenAPITools.Client.IApiResponse, IOk<Org.OpenAPITools.Model.Order?>
+    {
+        /// <summary>
+        /// Returns true if the response is 200 Ok
+        /// </summary>
+        /// <returns></returns>
+        bool IsOk { get; }
+
+        /// <summary>
+        /// Returns true if the response is 400 BadRequest
+        /// </summary>
+        /// <returns></returns>
+        bool IsBadRequest { get; }
+    }
+
     /// <summary>
     /// Represents a collection of functions to interact with the API endpoints
     /// </summary>
-    public sealed partial class StoreApi : IApi.IStoreApi
+    public class StoreApiEvents
+    {
+        /// <summary>
+        /// The event raised after the server response
+        /// </summary>
+        public event EventHandler<ApiResponseEventArgs>? OnDeleteOrder;
+
+        /// <summary>
+        /// The event raised after an error querying the server
+        /// </summary>
+        public event EventHandler<ExceptionEventArgs>? OnErrorDeleteOrder;
+
+        internal void ExecuteOnDeleteOrder(StoreApi.DeleteOrderApiResponse apiResponse)
+        {
+            OnDeleteOrder?.Invoke(this, new ApiResponseEventArgs(apiResponse));
+        }
+
+        internal void ExecuteOnErrorDeleteOrder(Exception exception)
+        {
+            OnErrorDeleteOrder?.Invoke(this, new ExceptionEventArgs(exception));
+        }
+
+        /// <summary>
+        /// The event raised after the server response
+        /// </summary>
+        public event EventHandler<ApiResponseEventArgs>? OnGetInventory;
+
+        /// <summary>
+        /// The event raised after an error querying the server
+        /// </summary>
+        public event EventHandler<ExceptionEventArgs>? OnErrorGetInventory;
+
+        internal void ExecuteOnGetInventory(StoreApi.GetInventoryApiResponse apiResponse)
+        {
+            OnGetInventory?.Invoke(this, new ApiResponseEventArgs(apiResponse));
+        }
+
+        internal void ExecuteOnErrorGetInventory(Exception exception)
+        {
+            OnErrorGetInventory?.Invoke(this, new ExceptionEventArgs(exception));
+        }
+
+        /// <summary>
+        /// The event raised after the server response
+        /// </summary>
+        public event EventHandler<ApiResponseEventArgs>? OnGetOrderById;
+
+        /// <summary>
+        /// The event raised after an error querying the server
+        /// </summary>
+        public event EventHandler<ExceptionEventArgs>? OnErrorGetOrderById;
+
+        internal void ExecuteOnGetOrderById(StoreApi.GetOrderByIdApiResponse apiResponse)
+        {
+            OnGetOrderById?.Invoke(this, new ApiResponseEventArgs(apiResponse));
+        }
+
+        internal void ExecuteOnErrorGetOrderById(Exception exception)
+        {
+            OnErrorGetOrderById?.Invoke(this, new ExceptionEventArgs(exception));
+        }
+
+        /// <summary>
+        /// The event raised after the server response
+        /// </summary>
+        public event EventHandler<ApiResponseEventArgs>? OnPlaceOrder;
+
+        /// <summary>
+        /// The event raised after an error querying the server
+        /// </summary>
+        public event EventHandler<ExceptionEventArgs>? OnErrorPlaceOrder;
+
+        internal void ExecuteOnPlaceOrder(StoreApi.PlaceOrderApiResponse apiResponse)
+        {
+            OnPlaceOrder?.Invoke(this, new ApiResponseEventArgs(apiResponse));
+        }
+
+        internal void ExecuteOnErrorPlaceOrder(Exception exception)
+        {
+            OnErrorPlaceOrder?.Invoke(this, new ExceptionEventArgs(exception));
+        }
+    }
+
+    /// <summary>
+    /// Represents a collection of functions to interact with the API endpoints
+    /// </summary>
+    public sealed partial class StoreApi : IStoreApi
     {
         private JsonSerializerOptions _jsonSerializerOptions;
+
+        /// <summary>
+        /// The logger factory
+        /// </summary>
+        public ILoggerFactory LoggerFactory { get; }
 
         /// <summary>
         /// The logger
@@ -139,6 +305,11 @@ namespace Org.OpenAPITools.Api
         /// The HttpClient
         /// </summary>
         public HttpClient HttpClient { get; }
+
+        /// <summary>
+        /// The class containing the events
+        /// </summary>
+        public StoreApiEvents Events { get; }
 
         /// <summary>
         /// A token provider of type <see cref="ApiKeyProvider"/>
@@ -169,7 +340,7 @@ namespace Org.OpenAPITools.Api
         /// Initializes a new instance of the <see cref="StoreApi"/> class.
         /// </summary>
         /// <returns></returns>
-        public StoreApi(ILogger<StoreApi> logger, HttpClient httpClient, JsonSerializerOptionsProvider jsonSerializerOptionsProvider,
+        public StoreApi(ILogger<StoreApi> logger, ILoggerFactory loggerFactory, HttpClient httpClient, JsonSerializerOptionsProvider jsonSerializerOptionsProvider, StoreApiEvents storeApiEvents,
             TokenProvider<ApiKeyToken> apiKeyProvider,
             TokenProvider<BearerToken> bearerTokenProvider,
             TokenProvider<BasicToken> basicTokenProvider,
@@ -177,8 +348,10 @@ namespace Org.OpenAPITools.Api
             TokenProvider<OAuthToken> oauthTokenProvider)
         {
             _jsonSerializerOptions = jsonSerializerOptionsProvider.Options;
-            Logger = logger;
+            LoggerFactory = loggerFactory;
+            Logger = LoggerFactory.CreateLogger<StoreApi>();
             HttpClient = httpClient;
+            Events = storeApiEvents;
             ApiKeyProvider = apiKeyProvider;
             BearerTokenProvider = bearerTokenProvider;
             BasicTokenProvider = basicTokenProvider;
@@ -195,14 +368,8 @@ namespace Org.OpenAPITools.Api
         /// <returns></returns>
         private void ValidateDeleteOrder(string orderId)
         {
-            #pragma warning disable CS0472 // The result of the expression is always the same since a value of this type is never equal to 'null'
-            #pragma warning disable CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
-
             if (orderId == null)
                 throw new ArgumentNullException(nameof(orderId));
-
-            #pragma warning restore CS0472 // The result of the expression is always the same since a value of this type is never equal to 'null'
-            #pragma warning restore CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
         }
 
         /// <summary>
@@ -210,7 +377,7 @@ namespace Org.OpenAPITools.Api
         /// </summary>
         /// <param name="apiResponseLocalVar"></param>
         /// <param name="orderId"></param>
-        private void AfterDeleteOrderDefaultImplementation(ApiResponse<object> apiResponseLocalVar, string orderId)
+        private void AfterDeleteOrderDefaultImplementation(IDeleteOrderApiResponse apiResponseLocalVar, string orderId)
         {
             bool suppressDefaultLog = false;
             AfterDeleteOrder(ref suppressDefaultLog, apiResponseLocalVar, orderId);
@@ -224,7 +391,7 @@ namespace Org.OpenAPITools.Api
         /// <param name="suppressDefaultLog"></param>
         /// <param name="apiResponseLocalVar"></param>
         /// <param name="orderId"></param>
-        partial void AfterDeleteOrder(ref bool suppressDefaultLog, ApiResponse<object> apiResponseLocalVar, string orderId);
+        partial void AfterDeleteOrder(ref bool suppressDefaultLog, IDeleteOrderApiResponse apiResponseLocalVar, string orderId);
 
         /// <summary>
         /// Logs exceptions that occur while retrieving the server response
@@ -235,26 +402,29 @@ namespace Org.OpenAPITools.Api
         /// <param name="orderId"></param>
         private void OnErrorDeleteOrderDefaultImplementation(Exception exception, string pathFormat, string path, string orderId)
         {
-            Logger.LogError(exception, "An error occurred while sending the request to the server.");
-            OnErrorDeleteOrder(exception, pathFormat, path, orderId);
+            bool suppressDefaultLog = false;
+            OnErrorDeleteOrder(ref suppressDefaultLog, exception, pathFormat, path, orderId);
+            if (!suppressDefaultLog)
+                Logger.LogError(exception, "An error occurred while sending the request to the server.");
         }
 
         /// <summary>
         /// A partial method that gives developers a way to provide customized exception handling
         /// </summary>
+        /// <param name="suppressDefaultLog"></param>
         /// <param name="exception"></param>
         /// <param name="pathFormat"></param>
         /// <param name="path"></param>
         /// <param name="orderId"></param>
-        partial void OnErrorDeleteOrder(Exception exception, string pathFormat, string path, string orderId);
+        partial void OnErrorDeleteOrder(ref bool suppressDefaultLog, Exception exception, string pathFormat, string path, string orderId);
 
         /// <summary>
         /// Delete purchase order by ID For valid response try integer IDs with value &lt; 1000. Anything above 1000 or nonintegers will generate API errors
         /// </summary>
         /// <param name="orderId">ID of the order that needs to be deleted</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns><see cref="Task"/>&lt;<see cref="ApiResponse{T}"/>&gt; where T : <see cref="object"/></returns>
-        public async Task<ApiResponse<object>?> DeleteOrderOrDefaultAsync(string orderId, System.Threading.CancellationToken cancellationToken = default)
+        /// <returns><see cref="Task"/>&lt;<see cref="IDeleteOrderApiResponse"/>&gt;</returns>
+        public async Task<IDeleteOrderApiResponse?> DeleteOrderOrDefaultAsync(string orderId, System.Threading.CancellationToken cancellationToken = default)
         {
             try
             {
@@ -272,8 +442,8 @@ namespace Org.OpenAPITools.Api
         /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="orderId">ID of the order that needs to be deleted</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns><see cref="Task"/>&lt;<see cref="ApiResponse{T}"/>&gt; where T : <see cref="object"/></returns>
-        public async Task<ApiResponse<object>> DeleteOrderAsync(string orderId, System.Threading.CancellationToken cancellationToken = default)
+        /// <returns><see cref="Task"/>&lt;<see cref="IDeleteOrderApiResponse"/>&gt;</returns>
+        public async Task<IDeleteOrderApiResponse> DeleteOrderAsync(string orderId, System.Threading.CancellationToken cancellationToken = default)
         {
             UriBuilder uriBuilderLocalVar = new UriBuilder();
 
@@ -301,9 +471,13 @@ namespace Org.OpenAPITools.Api
                     {
                         string responseContentLocalVar = await httpResponseMessageLocalVar.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-                        ApiResponse<object> apiResponseLocalVar = new ApiResponse<object>(httpRequestMessageLocalVar, httpResponseMessageLocalVar, responseContentLocalVar, "/store/order/{order_id}", requestedAtLocalVar, _jsonSerializerOptions);
+                        ILogger<DeleteOrderApiResponse> apiResponseLoggerLocalVar = LoggerFactory.CreateLogger<DeleteOrderApiResponse>();
+
+                        DeleteOrderApiResponse apiResponseLocalVar = new(apiResponseLoggerLocalVar, httpRequestMessageLocalVar, httpResponseMessageLocalVar, responseContentLocalVar, "/store/order/{order_id}", requestedAtLocalVar, _jsonSerializerOptions);
 
                         AfterDeleteOrderDefaultImplementation(apiResponseLocalVar, orderId);
+
+                        Events.ExecuteOnDeleteOrder(apiResponseLocalVar);
 
                         return apiResponseLocalVar;
                     }
@@ -312,15 +486,67 @@ namespace Org.OpenAPITools.Api
             catch(Exception e)
             {
                 OnErrorDeleteOrderDefaultImplementation(e, "/store/order/{order_id}", uriBuilderLocalVar.Path, orderId);
+                Events.ExecuteOnErrorDeleteOrder(e);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// The <see cref="DeleteOrderApiResponse"/>
+        /// </summary>
+        public partial class DeleteOrderApiResponse : Org.OpenAPITools.Client.ApiResponse, IDeleteOrderApiResponse
+        {
+            /// <summary>
+            /// The logger
+            /// </summary>
+            public ILogger<DeleteOrderApiResponse> Logger { get; }
+
+            /// <summary>
+            /// The <see cref="DeleteOrderApiResponse"/>
+            /// </summary>
+            /// <param name="logger"></param>
+            /// <param name="httpRequestMessage"></param>
+            /// <param name="httpResponseMessage"></param>
+            /// <param name="rawContent"></param>
+            /// <param name="path"></param>
+            /// <param name="requestedAt"></param>
+            /// <param name="jsonSerializerOptions"></param>
+            public DeleteOrderApiResponse(ILogger<DeleteOrderApiResponse> logger, System.Net.Http.HttpRequestMessage httpRequestMessage, System.Net.Http.HttpResponseMessage httpResponseMessage, string rawContent, string path, DateTime requestedAt, System.Text.Json.JsonSerializerOptions jsonSerializerOptions) : base(httpRequestMessage, httpResponseMessage, rawContent, path, requestedAt, jsonSerializerOptions)
+            {
+                Logger = logger;
+                OnCreated(httpRequestMessage, httpResponseMessage);
+            }
+
+            partial void OnCreated(System.Net.Http.HttpRequestMessage httpRequestMessage, System.Net.Http.HttpResponseMessage httpResponseMessage);
+
+            /// <summary>
+            /// Returns true if the response is 400 BadRequest
+            /// </summary>
+            /// <returns></returns>
+            public bool IsBadRequest => 400 == (int)StatusCode;
+
+            /// <summary>
+            /// Returns true if the response is 404 NotFound
+            /// </summary>
+            /// <returns></returns>
+            public bool IsNotFound => 404 == (int)StatusCode;
+
+            private void OnDeserializationErrorDefaultImplementation(Exception exception, HttpStatusCode httpStatusCode)
+            {
+                bool suppressDefaultLog = false;
+                OnDeserializationError(ref suppressDefaultLog, exception, httpStatusCode);
+                if (!suppressDefaultLog)
+                    Logger.LogError(exception, "An error occurred while deserializing the {code} response.", httpStatusCode);
+            }
+
+            partial void OnDeserializationError(ref bool suppressDefaultLog, Exception exception, HttpStatusCode httpStatusCode);
         }
 
         /// <summary>
         /// Processes the server response
         /// </summary>
         /// <param name="apiResponseLocalVar"></param>
-        private void AfterGetInventoryDefaultImplementation(ApiResponse<Dictionary<string, int>> apiResponseLocalVar)
+        private void AfterGetInventoryDefaultImplementation(IGetInventoryApiResponse apiResponseLocalVar)
         {
             bool suppressDefaultLog = false;
             AfterGetInventory(ref suppressDefaultLog, apiResponseLocalVar);
@@ -333,7 +559,7 @@ namespace Org.OpenAPITools.Api
         /// </summary>
         /// <param name="suppressDefaultLog"></param>
         /// <param name="apiResponseLocalVar"></param>
-        partial void AfterGetInventory(ref bool suppressDefaultLog, ApiResponse<Dictionary<string, int>> apiResponseLocalVar);
+        partial void AfterGetInventory(ref bool suppressDefaultLog, IGetInventoryApiResponse apiResponseLocalVar);
 
         /// <summary>
         /// Logs exceptions that occur while retrieving the server response
@@ -343,24 +569,27 @@ namespace Org.OpenAPITools.Api
         /// <param name="path"></param>
         private void OnErrorGetInventoryDefaultImplementation(Exception exception, string pathFormat, string path)
         {
-            Logger.LogError(exception, "An error occurred while sending the request to the server.");
-            OnErrorGetInventory(exception, pathFormat, path);
+            bool suppressDefaultLog = false;
+            OnErrorGetInventory(ref suppressDefaultLog, exception, pathFormat, path);
+            if (!suppressDefaultLog)
+                Logger.LogError(exception, "An error occurred while sending the request to the server.");
         }
 
         /// <summary>
         /// A partial method that gives developers a way to provide customized exception handling
         /// </summary>
+        /// <param name="suppressDefaultLog"></param>
         /// <param name="exception"></param>
         /// <param name="pathFormat"></param>
         /// <param name="path"></param>
-        partial void OnErrorGetInventory(Exception exception, string pathFormat, string path);
+        partial void OnErrorGetInventory(ref bool suppressDefaultLog, Exception exception, string pathFormat, string path);
 
         /// <summary>
         /// Returns pet inventories by status Returns a map of status codes to quantities
         /// </summary>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns><see cref="Task"/>&lt;<see cref="ApiResponse{T}"/>&gt; where T : <see cref="Dictionary{TKey, TValue}"/></returns>
-        public async Task<ApiResponse<Dictionary<string, int>>?> GetInventoryOrDefaultAsync(System.Threading.CancellationToken cancellationToken = default)
+        /// <returns><see cref="Task"/>&lt;<see cref="IGetInventoryApiResponse"/>&gt;</returns>
+        public async Task<IGetInventoryApiResponse?> GetInventoryOrDefaultAsync(System.Threading.CancellationToken cancellationToken = default)
         {
             try
             {
@@ -377,8 +606,8 @@ namespace Org.OpenAPITools.Api
         /// </summary>
         /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns><see cref="Task"/>&lt;<see cref="ApiResponse{T}"/>&gt; where T : <see cref="Dictionary{TKey, TValue}"/></returns>
-        public async Task<ApiResponse<Dictionary<string, int>>> GetInventoryAsync(System.Threading.CancellationToken cancellationToken = default)
+        /// <returns><see cref="Task"/>&lt;<see cref="IGetInventoryApiResponse"/>&gt;</returns>
+        public async Task<IGetInventoryApiResponse> GetInventoryAsync(System.Threading.CancellationToken cancellationToken = default)
         {
             UriBuilder uriBuilderLocalVar = new UriBuilder();
 
@@ -392,11 +621,9 @@ namespace Org.OpenAPITools.Api
                     uriBuilderLocalVar.Path = ClientUtils.CONTEXT_PATH + "/store/inventory";
 
                     List<TokenBase> tokenBaseLocalVars = new List<TokenBase>();
-
-                    ApiKeyToken apiKeyTokenLocalVar = (ApiKeyToken) await ApiKeyProvider.GetAsync(cancellationToken).ConfigureAwait(false);
-
+                    ApiKeyToken apiKeyTokenLocalVar;
+                    apiKeyTokenLocalVar = (ApiKeyToken) await ApiKeyProvider.GetAsync(cancellationToken).ConfigureAwait(false);
                     tokenBaseLocalVars.Add(apiKeyTokenLocalVar);
-
                     apiKeyTokenLocalVar.UseInHeader(httpRequestMessageLocalVar, "api_key");
 
                     httpRequestMessageLocalVar.RequestUri = uriBuilderLocalVar.Uri;
@@ -418,9 +645,13 @@ namespace Org.OpenAPITools.Api
                     {
                         string responseContentLocalVar = await httpResponseMessageLocalVar.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-                        ApiResponse<Dictionary<string, int>> apiResponseLocalVar = new ApiResponse<Dictionary<string, int>>(httpRequestMessageLocalVar, httpResponseMessageLocalVar, responseContentLocalVar, "/store/inventory", requestedAtLocalVar, _jsonSerializerOptions);
+                        ILogger<GetInventoryApiResponse> apiResponseLoggerLocalVar = LoggerFactory.CreateLogger<GetInventoryApiResponse>();
+
+                        GetInventoryApiResponse apiResponseLocalVar = new(apiResponseLoggerLocalVar, httpRequestMessageLocalVar, httpResponseMessageLocalVar, responseContentLocalVar, "/store/inventory", requestedAtLocalVar, _jsonSerializerOptions);
 
                         AfterGetInventoryDefaultImplementation(apiResponseLocalVar);
+
+                        Events.ExecuteOnGetInventory(apiResponseLocalVar);
 
                         if (apiResponseLocalVar.StatusCode == (HttpStatusCode) 429)
                             foreach(TokenBase tokenBaseLocalVar in tokenBaseLocalVars)
@@ -433,35 +664,96 @@ namespace Org.OpenAPITools.Api
             catch(Exception e)
             {
                 OnErrorGetInventoryDefaultImplementation(e, "/store/inventory", uriBuilderLocalVar.Path);
+                Events.ExecuteOnErrorGetInventory(e);
                 throw;
             }
         }
 
-        partial void FormatGetOrderById(ref long orderId);
-
         /// <summary>
-        /// Validates the request parameters
+        /// The <see cref="GetInventoryApiResponse"/>
         /// </summary>
-        /// <param name="orderId"></param>
-        /// <returns></returns>
-        private void ValidateGetOrderById(long orderId)
+        public partial class GetInventoryApiResponse : Org.OpenAPITools.Client.ApiResponse, IGetInventoryApiResponse
         {
-            #pragma warning disable CS0472 // The result of the expression is always the same since a value of this type is never equal to 'null'
-            #pragma warning disable CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
+            /// <summary>
+            /// The logger
+            /// </summary>
+            public ILogger<GetInventoryApiResponse> Logger { get; }
 
-            if (orderId == null)
-                throw new ArgumentNullException(nameof(orderId));
+            /// <summary>
+            /// The <see cref="GetInventoryApiResponse"/>
+            /// </summary>
+            /// <param name="logger"></param>
+            /// <param name="httpRequestMessage"></param>
+            /// <param name="httpResponseMessage"></param>
+            /// <param name="rawContent"></param>
+            /// <param name="path"></param>
+            /// <param name="requestedAt"></param>
+            /// <param name="jsonSerializerOptions"></param>
+            public GetInventoryApiResponse(ILogger<GetInventoryApiResponse> logger, System.Net.Http.HttpRequestMessage httpRequestMessage, System.Net.Http.HttpResponseMessage httpResponseMessage, string rawContent, string path, DateTime requestedAt, System.Text.Json.JsonSerializerOptions jsonSerializerOptions) : base(httpRequestMessage, httpResponseMessage, rawContent, path, requestedAt, jsonSerializerOptions)
+            {
+                Logger = logger;
+                OnCreated(httpRequestMessage, httpResponseMessage);
+            }
 
-            #pragma warning restore CS0472 // The result of the expression is always the same since a value of this type is never equal to 'null'
-            #pragma warning restore CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
+            partial void OnCreated(System.Net.Http.HttpRequestMessage httpRequestMessage, System.Net.Http.HttpResponseMessage httpResponseMessage);
+
+            /// <summary>
+            /// Returns true if the response is 200 Ok
+            /// </summary>
+            /// <returns></returns>
+            public bool IsOk => 200 == (int)StatusCode;
+
+            /// <summary>
+            /// Deserializes the response if the response is 200 Ok
+            /// </summary>
+            /// <returns></returns>
+            public Dictionary<string, int>? Ok()
+            {
+                // This logic may be modified with the AsModel.mustache template
+                return IsOk
+                    ? System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(RawContent, _jsonSerializerOptions)
+                    : null;
+            }
+
+            /// <summary>
+            /// Returns true if the response is 200 Ok and the deserialized response is not null
+            /// </summary>
+            /// <param name="result"></param>
+            /// <returns></returns>
+            public bool TryOk([NotNullWhen(true)]out Dictionary<string, int>? result)
+            {
+                result = null;
+
+                try
+                {
+                    result = Ok();
+                } catch (Exception e)
+                {
+                    OnDeserializationErrorDefaultImplementation(e, (HttpStatusCode)200);
+                }
+
+                return result != null;
+            }
+
+            private void OnDeserializationErrorDefaultImplementation(Exception exception, HttpStatusCode httpStatusCode)
+            {
+                bool suppressDefaultLog = false;
+                OnDeserializationError(ref suppressDefaultLog, exception, httpStatusCode);
+                if (!suppressDefaultLog)
+                    Logger.LogError(exception, "An error occurred while deserializing the {code} response.", httpStatusCode);
+            }
+
+            partial void OnDeserializationError(ref bool suppressDefaultLog, Exception exception, HttpStatusCode httpStatusCode);
         }
+
+        partial void FormatGetOrderById(ref long orderId);
 
         /// <summary>
         /// Processes the server response
         /// </summary>
         /// <param name="apiResponseLocalVar"></param>
         /// <param name="orderId"></param>
-        private void AfterGetOrderByIdDefaultImplementation(ApiResponse<Order> apiResponseLocalVar, long orderId)
+        private void AfterGetOrderByIdDefaultImplementation(IGetOrderByIdApiResponse apiResponseLocalVar, long orderId)
         {
             bool suppressDefaultLog = false;
             AfterGetOrderById(ref suppressDefaultLog, apiResponseLocalVar, orderId);
@@ -475,7 +767,7 @@ namespace Org.OpenAPITools.Api
         /// <param name="suppressDefaultLog"></param>
         /// <param name="apiResponseLocalVar"></param>
         /// <param name="orderId"></param>
-        partial void AfterGetOrderById(ref bool suppressDefaultLog, ApiResponse<Order> apiResponseLocalVar, long orderId);
+        partial void AfterGetOrderById(ref bool suppressDefaultLog, IGetOrderByIdApiResponse apiResponseLocalVar, long orderId);
 
         /// <summary>
         /// Logs exceptions that occur while retrieving the server response
@@ -486,26 +778,29 @@ namespace Org.OpenAPITools.Api
         /// <param name="orderId"></param>
         private void OnErrorGetOrderByIdDefaultImplementation(Exception exception, string pathFormat, string path, long orderId)
         {
-            Logger.LogError(exception, "An error occurred while sending the request to the server.");
-            OnErrorGetOrderById(exception, pathFormat, path, orderId);
+            bool suppressDefaultLog = false;
+            OnErrorGetOrderById(ref suppressDefaultLog, exception, pathFormat, path, orderId);
+            if (!suppressDefaultLog)
+                Logger.LogError(exception, "An error occurred while sending the request to the server.");
         }
 
         /// <summary>
         /// A partial method that gives developers a way to provide customized exception handling
         /// </summary>
+        /// <param name="suppressDefaultLog"></param>
         /// <param name="exception"></param>
         /// <param name="pathFormat"></param>
         /// <param name="path"></param>
         /// <param name="orderId"></param>
-        partial void OnErrorGetOrderById(Exception exception, string pathFormat, string path, long orderId);
+        partial void OnErrorGetOrderById(ref bool suppressDefaultLog, Exception exception, string pathFormat, string path, long orderId);
 
         /// <summary>
         /// Find purchase order by ID For valid response try integer IDs with value &lt;&#x3D; 5 or &gt; 10. Other values will generate exceptions
         /// </summary>
         /// <param name="orderId">ID of pet that needs to be fetched</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns><see cref="Task"/>&lt;<see cref="ApiResponse{T}"/>&gt; where T : <see cref="Order"/></returns>
-        public async Task<ApiResponse<Order>?> GetOrderByIdOrDefaultAsync(long orderId, System.Threading.CancellationToken cancellationToken = default)
+        /// <returns><see cref="Task"/>&lt;<see cref="IGetOrderByIdApiResponse"/>&gt;</returns>
+        public async Task<IGetOrderByIdApiResponse?> GetOrderByIdOrDefaultAsync(long orderId, System.Threading.CancellationToken cancellationToken = default)
         {
             try
             {
@@ -523,15 +818,13 @@ namespace Org.OpenAPITools.Api
         /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="orderId">ID of pet that needs to be fetched</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns><see cref="Task"/>&lt;<see cref="ApiResponse{T}"/>&gt; where T : <see cref="Order"/></returns>
-        public async Task<ApiResponse<Order>> GetOrderByIdAsync(long orderId, System.Threading.CancellationToken cancellationToken = default)
+        /// <returns><see cref="Task"/>&lt;<see cref="IGetOrderByIdApiResponse"/>&gt;</returns>
+        public async Task<IGetOrderByIdApiResponse> GetOrderByIdAsync(long orderId, System.Threading.CancellationToken cancellationToken = default)
         {
             UriBuilder uriBuilderLocalVar = new UriBuilder();
 
             try
             {
-                ValidateGetOrderById(orderId);
-
                 FormatGetOrderById(ref orderId);
 
                 using (HttpRequestMessage httpRequestMessageLocalVar = new HttpRequestMessage())
@@ -562,9 +855,13 @@ namespace Org.OpenAPITools.Api
                     {
                         string responseContentLocalVar = await httpResponseMessageLocalVar.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-                        ApiResponse<Order> apiResponseLocalVar = new ApiResponse<Order>(httpRequestMessageLocalVar, httpResponseMessageLocalVar, responseContentLocalVar, "/store/order/{order_id}", requestedAtLocalVar, _jsonSerializerOptions);
+                        ILogger<GetOrderByIdApiResponse> apiResponseLoggerLocalVar = LoggerFactory.CreateLogger<GetOrderByIdApiResponse>();
+
+                        GetOrderByIdApiResponse apiResponseLocalVar = new(apiResponseLoggerLocalVar, httpRequestMessageLocalVar, httpResponseMessageLocalVar, responseContentLocalVar, "/store/order/{order_id}", requestedAtLocalVar, _jsonSerializerOptions);
 
                         AfterGetOrderByIdDefaultImplementation(apiResponseLocalVar, orderId);
+
+                        Events.ExecuteOnGetOrderById(apiResponseLocalVar);
 
                         return apiResponseLocalVar;
                     }
@@ -573,8 +870,98 @@ namespace Org.OpenAPITools.Api
             catch(Exception e)
             {
                 OnErrorGetOrderByIdDefaultImplementation(e, "/store/order/{order_id}", uriBuilderLocalVar.Path, orderId);
+                Events.ExecuteOnErrorGetOrderById(e);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// The <see cref="GetOrderByIdApiResponse"/>
+        /// </summary>
+        public partial class GetOrderByIdApiResponse : Org.OpenAPITools.Client.ApiResponse, IGetOrderByIdApiResponse
+        {
+            /// <summary>
+            /// The logger
+            /// </summary>
+            public ILogger<GetOrderByIdApiResponse> Logger { get; }
+
+            /// <summary>
+            /// The <see cref="GetOrderByIdApiResponse"/>
+            /// </summary>
+            /// <param name="logger"></param>
+            /// <param name="httpRequestMessage"></param>
+            /// <param name="httpResponseMessage"></param>
+            /// <param name="rawContent"></param>
+            /// <param name="path"></param>
+            /// <param name="requestedAt"></param>
+            /// <param name="jsonSerializerOptions"></param>
+            public GetOrderByIdApiResponse(ILogger<GetOrderByIdApiResponse> logger, System.Net.Http.HttpRequestMessage httpRequestMessage, System.Net.Http.HttpResponseMessage httpResponseMessage, string rawContent, string path, DateTime requestedAt, System.Text.Json.JsonSerializerOptions jsonSerializerOptions) : base(httpRequestMessage, httpResponseMessage, rawContent, path, requestedAt, jsonSerializerOptions)
+            {
+                Logger = logger;
+                OnCreated(httpRequestMessage, httpResponseMessage);
+            }
+
+            partial void OnCreated(System.Net.Http.HttpRequestMessage httpRequestMessage, System.Net.Http.HttpResponseMessage httpResponseMessage);
+
+            /// <summary>
+            /// Returns true if the response is 200 Ok
+            /// </summary>
+            /// <returns></returns>
+            public bool IsOk => 200 == (int)StatusCode;
+
+            /// <summary>
+            /// Deserializes the response if the response is 200 Ok
+            /// </summary>
+            /// <returns></returns>
+            public Org.OpenAPITools.Model.Order? Ok()
+            {
+                // This logic may be modified with the AsModel.mustache template
+                return IsOk
+                    ? System.Text.Json.JsonSerializer.Deserialize<Org.OpenAPITools.Model.Order>(RawContent, _jsonSerializerOptions)
+                    : null;
+            }
+
+            /// <summary>
+            /// Returns true if the response is 200 Ok and the deserialized response is not null
+            /// </summary>
+            /// <param name="result"></param>
+            /// <returns></returns>
+            public bool TryOk([NotNullWhen(true)]out Org.OpenAPITools.Model.Order? result)
+            {
+                result = null;
+
+                try
+                {
+                    result = Ok();
+                } catch (Exception e)
+                {
+                    OnDeserializationErrorDefaultImplementation(e, (HttpStatusCode)200);
+                }
+
+                return result != null;
+            }
+
+            /// <summary>
+            /// Returns true if the response is 400 BadRequest
+            /// </summary>
+            /// <returns></returns>
+            public bool IsBadRequest => 400 == (int)StatusCode;
+
+            /// <summary>
+            /// Returns true if the response is 404 NotFound
+            /// </summary>
+            /// <returns></returns>
+            public bool IsNotFound => 404 == (int)StatusCode;
+
+            private void OnDeserializationErrorDefaultImplementation(Exception exception, HttpStatusCode httpStatusCode)
+            {
+                bool suppressDefaultLog = false;
+                OnDeserializationError(ref suppressDefaultLog, exception, httpStatusCode);
+                if (!suppressDefaultLog)
+                    Logger.LogError(exception, "An error occurred while deserializing the {code} response.", httpStatusCode);
+            }
+
+            partial void OnDeserializationError(ref bool suppressDefaultLog, Exception exception, HttpStatusCode httpStatusCode);
         }
 
         partial void FormatPlaceOrder(Order order);
@@ -586,14 +973,8 @@ namespace Org.OpenAPITools.Api
         /// <returns></returns>
         private void ValidatePlaceOrder(Order order)
         {
-            #pragma warning disable CS0472 // The result of the expression is always the same since a value of this type is never equal to 'null'
-            #pragma warning disable CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
-
             if (order == null)
                 throw new ArgumentNullException(nameof(order));
-
-            #pragma warning restore CS0472 // The result of the expression is always the same since a value of this type is never equal to 'null'
-            #pragma warning restore CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
         }
 
         /// <summary>
@@ -601,7 +982,7 @@ namespace Org.OpenAPITools.Api
         /// </summary>
         /// <param name="apiResponseLocalVar"></param>
         /// <param name="order"></param>
-        private void AfterPlaceOrderDefaultImplementation(ApiResponse<Order> apiResponseLocalVar, Order order)
+        private void AfterPlaceOrderDefaultImplementation(IPlaceOrderApiResponse apiResponseLocalVar, Order order)
         {
             bool suppressDefaultLog = false;
             AfterPlaceOrder(ref suppressDefaultLog, apiResponseLocalVar, order);
@@ -615,7 +996,7 @@ namespace Org.OpenAPITools.Api
         /// <param name="suppressDefaultLog"></param>
         /// <param name="apiResponseLocalVar"></param>
         /// <param name="order"></param>
-        partial void AfterPlaceOrder(ref bool suppressDefaultLog, ApiResponse<Order> apiResponseLocalVar, Order order);
+        partial void AfterPlaceOrder(ref bool suppressDefaultLog, IPlaceOrderApiResponse apiResponseLocalVar, Order order);
 
         /// <summary>
         /// Logs exceptions that occur while retrieving the server response
@@ -626,26 +1007,29 @@ namespace Org.OpenAPITools.Api
         /// <param name="order"></param>
         private void OnErrorPlaceOrderDefaultImplementation(Exception exception, string pathFormat, string path, Order order)
         {
-            Logger.LogError(exception, "An error occurred while sending the request to the server.");
-            OnErrorPlaceOrder(exception, pathFormat, path, order);
+            bool suppressDefaultLog = false;
+            OnErrorPlaceOrder(ref suppressDefaultLog, exception, pathFormat, path, order);
+            if (!suppressDefaultLog)
+                Logger.LogError(exception, "An error occurred while sending the request to the server.");
         }
 
         /// <summary>
         /// A partial method that gives developers a way to provide customized exception handling
         /// </summary>
+        /// <param name="suppressDefaultLog"></param>
         /// <param name="exception"></param>
         /// <param name="pathFormat"></param>
         /// <param name="path"></param>
         /// <param name="order"></param>
-        partial void OnErrorPlaceOrder(Exception exception, string pathFormat, string path, Order order);
+        partial void OnErrorPlaceOrder(ref bool suppressDefaultLog, Exception exception, string pathFormat, string path, Order order);
 
         /// <summary>
         /// Place an order for a pet 
         /// </summary>
         /// <param name="order">order placed for purchasing the pet</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns><see cref="Task"/>&lt;<see cref="ApiResponse{T}"/>&gt; where T : <see cref="Order"/></returns>
-        public async Task<ApiResponse<Order>?> PlaceOrderOrDefaultAsync(Order order, System.Threading.CancellationToken cancellationToken = default)
+        /// <returns><see cref="Task"/>&lt;<see cref="IPlaceOrderApiResponse"/>&gt;</returns>
+        public async Task<IPlaceOrderApiResponse?> PlaceOrderOrDefaultAsync(Order order, System.Threading.CancellationToken cancellationToken = default)
         {
             try
             {
@@ -663,8 +1047,8 @@ namespace Org.OpenAPITools.Api
         /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="order">order placed for purchasing the pet</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-        /// <returns><see cref="Task"/>&lt;<see cref="ApiResponse{T}"/>&gt; where T : <see cref="Order"/></returns>
-        public async Task<ApiResponse<Order>> PlaceOrderAsync(Order order, System.Threading.CancellationToken cancellationToken = default)
+        /// <returns><see cref="Task"/>&lt;<see cref="IPlaceOrderApiResponse"/>&gt;</returns>
+        public async Task<IPlaceOrderApiResponse> PlaceOrderAsync(Order order, System.Threading.CancellationToken cancellationToken = default)
         {
             UriBuilder uriBuilderLocalVar = new UriBuilder();
 
@@ -693,7 +1077,7 @@ namespace Org.OpenAPITools.Api
 
                     string? contentTypeLocalVar = ClientUtils.SelectHeaderContentType(contentTypes);
 
-                    if (contentTypeLocalVar != null)
+                    if (contentTypeLocalVar != null && httpRequestMessageLocalVar.Content != null)
                         httpRequestMessageLocalVar.Content.Headers.ContentType = new MediaTypeHeaderValue(contentTypeLocalVar);
 
                     string[] acceptLocalVars = new string[] {
@@ -714,9 +1098,13 @@ namespace Org.OpenAPITools.Api
                     {
                         string responseContentLocalVar = await httpResponseMessageLocalVar.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-                        ApiResponse<Order> apiResponseLocalVar = new ApiResponse<Order>(httpRequestMessageLocalVar, httpResponseMessageLocalVar, responseContentLocalVar, "/store/order", requestedAtLocalVar, _jsonSerializerOptions);
+                        ILogger<PlaceOrderApiResponse> apiResponseLoggerLocalVar = LoggerFactory.CreateLogger<PlaceOrderApiResponse>();
+
+                        PlaceOrderApiResponse apiResponseLocalVar = new(apiResponseLoggerLocalVar, httpRequestMessageLocalVar, httpResponseMessageLocalVar, responseContentLocalVar, "/store/order", requestedAtLocalVar, _jsonSerializerOptions);
 
                         AfterPlaceOrderDefaultImplementation(apiResponseLocalVar, order);
+
+                        Events.ExecuteOnPlaceOrder(apiResponseLocalVar);
 
                         return apiResponseLocalVar;
                     }
@@ -725,8 +1113,92 @@ namespace Org.OpenAPITools.Api
             catch(Exception e)
             {
                 OnErrorPlaceOrderDefaultImplementation(e, "/store/order", uriBuilderLocalVar.Path, order);
+                Events.ExecuteOnErrorPlaceOrder(e);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// The <see cref="PlaceOrderApiResponse"/>
+        /// </summary>
+        public partial class PlaceOrderApiResponse : Org.OpenAPITools.Client.ApiResponse, IPlaceOrderApiResponse
+        {
+            /// <summary>
+            /// The logger
+            /// </summary>
+            public ILogger<PlaceOrderApiResponse> Logger { get; }
+
+            /// <summary>
+            /// The <see cref="PlaceOrderApiResponse"/>
+            /// </summary>
+            /// <param name="logger"></param>
+            /// <param name="httpRequestMessage"></param>
+            /// <param name="httpResponseMessage"></param>
+            /// <param name="rawContent"></param>
+            /// <param name="path"></param>
+            /// <param name="requestedAt"></param>
+            /// <param name="jsonSerializerOptions"></param>
+            public PlaceOrderApiResponse(ILogger<PlaceOrderApiResponse> logger, System.Net.Http.HttpRequestMessage httpRequestMessage, System.Net.Http.HttpResponseMessage httpResponseMessage, string rawContent, string path, DateTime requestedAt, System.Text.Json.JsonSerializerOptions jsonSerializerOptions) : base(httpRequestMessage, httpResponseMessage, rawContent, path, requestedAt, jsonSerializerOptions)
+            {
+                Logger = logger;
+                OnCreated(httpRequestMessage, httpResponseMessage);
+            }
+
+            partial void OnCreated(System.Net.Http.HttpRequestMessage httpRequestMessage, System.Net.Http.HttpResponseMessage httpResponseMessage);
+
+            /// <summary>
+            /// Returns true if the response is 200 Ok
+            /// </summary>
+            /// <returns></returns>
+            public bool IsOk => 200 == (int)StatusCode;
+
+            /// <summary>
+            /// Deserializes the response if the response is 200 Ok
+            /// </summary>
+            /// <returns></returns>
+            public Org.OpenAPITools.Model.Order? Ok()
+            {
+                // This logic may be modified with the AsModel.mustache template
+                return IsOk
+                    ? System.Text.Json.JsonSerializer.Deserialize<Org.OpenAPITools.Model.Order>(RawContent, _jsonSerializerOptions)
+                    : null;
+            }
+
+            /// <summary>
+            /// Returns true if the response is 200 Ok and the deserialized response is not null
+            /// </summary>
+            /// <param name="result"></param>
+            /// <returns></returns>
+            public bool TryOk([NotNullWhen(true)]out Org.OpenAPITools.Model.Order? result)
+            {
+                result = null;
+
+                try
+                {
+                    result = Ok();
+                } catch (Exception e)
+                {
+                    OnDeserializationErrorDefaultImplementation(e, (HttpStatusCode)200);
+                }
+
+                return result != null;
+            }
+
+            /// <summary>
+            /// Returns true if the response is 400 BadRequest
+            /// </summary>
+            /// <returns></returns>
+            public bool IsBadRequest => 400 == (int)StatusCode;
+
+            private void OnDeserializationErrorDefaultImplementation(Exception exception, HttpStatusCode httpStatusCode)
+            {
+                bool suppressDefaultLog = false;
+                OnDeserializationError(ref suppressDefaultLog, exception, httpStatusCode);
+                if (!suppressDefaultLog)
+                    Logger.LogError(exception, "An error occurred while deserializing the {code} response.", httpStatusCode);
+            }
+
+            partial void OnDeserializationError(ref bool suppressDefaultLog, Exception exception, HttpStatusCode httpStatusCode);
         }
     }
 }

@@ -104,10 +104,10 @@ namespace Org.OpenAPITools.Model
 
                 if (utf8JsonReader.TokenType == JsonTokenType.PropertyName && currentDepth == utf8JsonReader.CurrentDepth - 1)
                 {
-                    string? propertyName = utf8JsonReader.GetString();
+                    string? localVarJsonPropertyName = utf8JsonReader.GetString();
                     utf8JsonReader.Read();
 
-                    switch (propertyName)
+                    switch (localVarJsonPropertyName)
                     {
                         case "children":
                             if (utf8JsonReader.TokenType != JsonTokenType.Null)
@@ -168,7 +168,8 @@ namespace Org.OpenAPITools.Model
         public void WriteProperties(ref Utf8JsonWriter writer, Adult adult, JsonSerializerOptions jsonSerializerOptions)
         {
             writer.WritePropertyName("children");
-            JsonSerializer.Serialize(writer, adult.Children, jsonSerializerOptions);            writer.WriteString("firstName", adult.FirstName);
+            JsonSerializer.Serialize(writer, adult.Children, jsonSerializerOptions);
+            writer.WriteString("firstName", adult.FirstName);
             writer.WriteString("lastName", adult.LastName);
             writer.WriteString("$_type", adult.Type);
         }

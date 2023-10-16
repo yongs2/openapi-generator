@@ -37,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.openapitools.codegen.api.TemplateDefinition;
 import org.openapitools.codegen.api.TemplatePathLocator;
 import org.openapitools.codegen.api.TemplateProcessor;
+import org.openapitools.codegen.config.GeneratorSettings;
 import org.openapitools.codegen.config.GlobalSettings;
 import org.openapitools.codegen.api.TemplatingEngineAdapter;
 import org.openapitools.codegen.api.TemplateFileType;
@@ -58,6 +59,7 @@ import org.openapitools.codegen.utils.ImplementationVersion;
 import org.openapitools.codegen.utils.ModelUtils;
 import org.openapitools.codegen.utils.ProcessUtils;
 import org.openapitools.codegen.utils.URLPathUtils;
+import org.openapitools.codegen.utils.SemVer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -254,10 +256,18 @@ public class DefaultGenerator implements Generator {
         }
 
         config.processOpts();
+        if (opts != null && opts.getGeneratorSettings() != null) {
+            config.typeMapping().putAll(opts.getGeneratorSettings().getTypeMappings());
+            config.importMapping().putAll(opts.getGeneratorSettings().getImportMappings());
+        }
 
         // normalize the spec
         try {
             if (config.getUseOpenAPINormalizer()) {
+                SemVer version = new SemVer(openAPI.getOpenapi());
+                if (version.atLeast("3.1.0")) {
+                    config.openapiNormalizer().put("NORMALIZE_31SPEC", "true");
+                }
                 OpenAPINormalizer openapiNormalizer = new OpenAPINormalizer(openAPI, config.openapiNormalizer());
                 openapiNormalizer.normalize();
             }
@@ -270,7 +280,7 @@ public class DefaultGenerator implements Generator {
         if (config.getUseInlineModelResolver()) {
             InlineModelResolver inlineModelResolver = new InlineModelResolver();
             inlineModelResolver.setInlineSchemaNameMapping(config.inlineSchemaNameMapping());
-            inlineModelResolver.setInlineSchemaNameDefaults(config.inlineSchemaNameDefault());
+            inlineModelResolver.setInlineSchemaOptions(config.inlineSchemaOption());
 
             inlineModelResolver.flatten(openAPI);
         }
@@ -410,8 +420,15 @@ public class DefaultGenerator implements Generator {
 
     private void generateModel(List<File> files, Map<String, Object> models, String modelName) throws IOException {
         for (String templateName : config.modelTemplateFiles().keySet()) {
-            String filename = config.modelFilename(templateName, modelName);
-            File written = processTemplateToFile(models, templateName, filename, generateModels, CodegenConstants.MODELS);
+            File written;
+            if (config.templateOutputDirs().containsKey(templateName)) {
+                String outputDir = config.getOutputDir() + File.separator + config.templateOutputDirs().get(templateName);
+                String filename = config.modelFilename(templateName, modelName, outputDir);
+                written = processTemplateToFile(models, templateName, filename, generateModels, CodegenConstants.MODELS, outputDir);
+            } else {
+                String filename = config.modelFilename(templateName, modelName);
+                written = processTemplateToFile(models, templateName, filename, generateModels, CodegenConstants.MODELS);
+            }
             if (written != null) {
                 files.add(written);
                 if (config.isEnablePostProcessFile() && !dryRun) {
@@ -493,7 +510,7 @@ public class DefaultGenerator implements Generator {
 
                 Schema schema = schemas.get(name);
 
-                if (ModelUtils.isFreeFormObject(this.openAPI, schema)) { // check to see if it's a free-form object
+                if (ModelUtils.isFreeFormObject(schema)) { // check to see if it's a free-form object
                     // there are 3 free form use cases
                     // 1. free form with no validation that is not allOf included in any composed schemas
                     // 2. free form with validation
@@ -684,8 +701,15 @@ public class DefaultGenerator implements Generator {
                 addAuthenticationSwitches(operation);
 
                 for (String templateName : config.apiTemplateFiles().keySet()) {
-                    String filename = config.apiFilename(templateName, tag);
-                    File written = processTemplateToFile(operation, templateName, filename, generateApis, CodegenConstants.APIS);
+                    File written;
+                    if (config.templateOutputDirs().containsKey(templateName)) {
+                        String outputDir = config.getOutputDir() + File.separator + config.templateOutputDirs().get(templateName);
+                        String filename = config.apiFilename(templateName, tag, outputDir);
+                        written = processTemplateToFile(operation, templateName, filename, generateApis, CodegenConstants.APIS, outputDir);
+                    } else {
+                        String filename = config.apiFilename(templateName, tag);
+                        written = processTemplateToFile(operation, templateName, filename, generateApis, CodegenConstants.APIS);
+                    }
                     if (written != null) {
                         files.add(written);
                         if (config.isEnablePostProcessFile() && !dryRun) {
@@ -1058,7 +1082,10 @@ public class DefaultGenerator implements Generator {
                         } else {
                             templateExt = StringUtils.prependIfMissing(templateExt, ".");
                         }
-
+                        String templateOutputFolder = userDefinedTemplate.getFolder();
+                        if (!templateOutputFolder.isEmpty()) {
+                            config.templateOutputDirs().put(templateFile, templateOutputFolder);
+                        }
                         switch (userDefinedTemplate.getTemplateType()) {
                             case API:
                                 config.apiTemplateFiles().put(templateFile, templateExt);
@@ -1331,9 +1358,11 @@ public class DefaultGenerator implements Generator {
         for (Map.Entry<String, Schema> definitionsEntry : definitions.entrySet()) {
             String key = definitionsEntry.getKey();
             Schema schema = definitionsEntry.getValue();
-            if (schema == null)
-                throw new RuntimeException("schema cannot be null in processModels");
-            LOGGER.debug(">> FIXME << processModels.01.fromModel.name[{}] START >>>>>", key);
+            if (schema == null) {
+                LOGGER.warn("Schema {} cannot be null in processModels", key);
+                continue;
+            }
+        LOGGER.debug(">> FIXME << processModels.01.fromModel.name[{}] START >>>>>", key);
             CodegenModel cm = config.fromModel(key, schema);
             LOGGER.debug(">> FIXME << processModels.02.fromModel.name[{}] CodegenModel[{}]", key, cm);
             ModelMap mo = new ModelMap();
@@ -1344,7 +1373,7 @@ public class DefaultGenerator implements Generator {
             cm.removeSelfReferenceImport();
 
             allImports.addAll(cm.imports);
-            LOGGER.debug(">> FIXME << processModels.02.fromModel.name[{}] DONE <<<<<<", key);
+        LOGGER.debug(">> FIXME << processModels.02.fromModel.name[{}] DONE <<<<<<", key);
         }
         objs.setModels(modelMaps);
         Set<String> importSet = new ConcurrentSkipListSet<>();

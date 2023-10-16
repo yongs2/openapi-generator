@@ -579,6 +579,47 @@ paths:
           description: User not found
       security:
         - api_key: []
+  '/fake/uploadImage/array of_file':
+    post:
+      tags:
+        - pet
+      summary: uploads images (array of files)
+      description: ''
+      operationId: uploadFileArrayOfFiles
+      parameters:
+        - name: petId
+          in: path
+          description: ID of pet to update
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      security:
+        - petstore_auth:
+            - 'write:pets'
+            - 'read:pets'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                additionalMetadata:
+                  description: Additional data to pass to server
+                  type: string
+                files:
+                  description: files to upload
+                  type: array
+                  items:
+                    type: string
+                    format: binary
 externalDocs:
   description: Find out more about Swagger
   url: 'http://swagger.io'
@@ -617,9 +658,41 @@ components:
       name: api_key
       in: header
   schemas:
+    OrderInfo:
+      title: Pet Order Info
+      description: An order info for a pets from the pet store
+      type: object
+      properties:
+        petId:
+          type: integer
+          format: int64
+        quantity:
+          type: integer
+          format: int32
+        shipDate:
+          type: string
+          format: date-time
+      xml:
+        name: OrderInfo
+    SpecialInfo:
+      title: Pet Order Info
+      description: An order info for a pets from the pet store
+      discriminator:
+        propertyName: type
+      type: object
+      properties:
+        promotion:
+          type: boolean
+        type:
+          type: string
+      xml:
+        name: OrderInfo
     Order:
       title: Pet Order
       description: An order for a pets from the pet store
+      allOf:
+        - $ref: '#/components/schemas/OrderInfo'
+        - $ref: '#/components/schemas/SpecialInfo'
       type: object
       properties:
         id:
@@ -644,12 +717,18 @@ components:
         complete:
           type: boolean
           default: false
+        comment:
+          type: string
+          nullable: true
       xml:
         name: Order
+      required:
+        - comment
     Category:
       title: Pet category
       description: A category for a pet
       type: object
+      nullable: true
       properties:
         id:
           type: integer
@@ -679,12 +758,45 @@ components:
           type: string
         phone:
           type: string
+          nullable: true
         userStatus:
           type: integer
           format: int32
           description: User Status
+        deepSliceModel:
+          nullable: true
+          type: array
+          description: An array 1-deep.
+          items:
+            type: array
+            description: An array 2-deep.
+            items:
+              type: array
+              description: An array 3-deep.
+              items:
+                $ref: '#/components/schemas/Tag'
+        deepSliceMap:
+          type: array
+          description: An array 1-deep.
+          items:
+            type: array
+            description: An array 2-deep.
+            items:
+              title: an Object
+              type: object
+              description: An array 3-deep.
+              properties:
+                tag:
+                  $ref: '#/components/schemas/Tag'
+                Pet:
+                  type: array
+                  description: An array of pet.
+                  items:
+                    $ref: '#/components/schemas/Pet'
       xml:
         name: User
+      required:
+        - deepSliceModel
     Tag:
       title: Pet Tag
       description: A tag for a pet
@@ -714,6 +826,7 @@ components:
           type: string
           example: doggie
         photoUrls:
+          nullable: true
           type: array
           xml:
             name: photoUrl
@@ -721,6 +834,7 @@ components:
           items:
             type: string
         tags:
+          nullable: true
           type: array
           xml:
             name: tag
